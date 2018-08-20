@@ -966,22 +966,50 @@ QSharedPointer<QStandardItemModel>  DBHandler::getNewConversationItemModel(
 //        UNKNOWN = 255,
 //    };
 
+
+    if (qstrMyNymId.isEmpty() || qstrThreadId.isEmpty()) {
+        return pModel;
+    }
+
+    // --------------------------------------------
+
     int nIndex = 0;
-    QString qstrThreadItemId = QString("%1%2")
-      .arg(qstrThreadId).arg(QString::number(nIndex));
 
     const std::string str_my_nym_id      = qstrMyNymId.toStdString();
     const std::string str_thread_id      = qstrThreadId.toStdString();
-    const std::string str_thread_item_id = qstrThreadItemId.toStdString();
 
-    const auto& thread = Moneychanger::It()->OT().UI().ActivityThread(
+    qDebug() << "str_my_nym_id: " << QString::fromStdString(str_my_nym_id);
+    qDebug() << "str_thread_id: " << QString::fromStdString(str_thread_id);
+
+    if (opentxs::Messagability::READY !=
+        opentxs::OT::App().Client().Sync().CanMessage(opentxs::Identifier::Factory(str_my_nym_id),
+                                                      opentxs::Identifier::Factory(str_thread_id)))
+    {
+        qDebug() << "Returning empty conversational model for contact, since he is not yet messagable.";
+
+        return pModel;
+    }
+    // --------------------------------------------
+
+    const auto& thread = opentxs::OT::App().Client().UI().ActivityThread(
         opentxs::Identifier::Factory(str_my_nym_id),
         opentxs::Identifier::Factory(str_thread_id));
-    const auto& first = thread.First();
+
+    const auto first = thread.First();
 
 //    qDebug() << QString::fromStdString(thread.DisplayName()) << "\n";
 
     if (false == first->Valid()) {
+        qDebug() << "Returning out of DBHandler::GetNewConversationItemModel since first thread item is invalid.";
+        return pModel;
+    }
+
+    qDebug() << "thread.Participants().size(): " << QString::number(thread.Participants().size());
+
+    if (   thread.Participants().size() != 1
+        || thread.DisplayName().empty())
+    {
+        qDebug() << "Returning from DBHandler::GetNewConversationItemModel since participants or display name is messed up.";
         return pModel;
     }
 
@@ -1001,13 +1029,18 @@ QSharedPointer<QStandardItemModel>  DBHandler::getNewConversationItemModel(
     QDateTime dateTime;
     dateTime.setTime_t(std::chrono::system_clock::to_time_t(first->Timestamp()));
 
+    QString qstrThreadItemId = QString("%1%2")
+      .arg(qstrThreadId).arg(QString::number(nIndex));
+    const std::string str_thread_item_id = qstrThreadItemId.toStdString();
+
     qlistItems.append(new QStandardItem(QString::fromStdString(str_thread_item_id))); // message_id
     qlistItems.append(new QStandardItem(QString::fromStdString(str_my_nym_id)));  // my_nym_id
     qlistItems.append(new QStandardItem(QString::fromStdString(str_thread_id))); // thread_id
     qlistItems.append(new QStandardItem(QString::fromStdString(str_thread_item_id))); // thread_item_id
     qlistItems.append(new QStandardItem(dateTime.toString()));  // Timestamp
     qlistItems.append(new QStandardItem(QString::number(nFolder)));  // Folder
-    if (first->Loading() && first->Text().empty()) {
+
+    if (first->Loading() || first->Text().empty()) {
         qlistItems.append(new QStandardItem(QString("%1...").arg(QObject::tr("Loading"))));  // Body
     }
     else {
@@ -1030,13 +1063,14 @@ QSharedPointer<QStandardItemModel>  DBHandler::getNewConversationItemModel(
 
     while (false == last) {
         auto line = thread.Next();
-        last = line->Last();
 
         // TODO: Populate the succeeding thread items here.
 
         if (false == line->Valid()) {
             return pModel;
         }
+
+        last = line->Last();
 
         // 0 for moneychanger's outbox, and 1 for inbox.
         int nFolder = -1;
@@ -1050,6 +1084,12 @@ QSharedPointer<QStandardItemModel>  DBHandler::getNewConversationItemModel(
             nFolder = static_cast<int>(opentxs::StorageBox::DRAFT);
         }
 
+        ++nIndex;
+        QString qstrThreadItemId = QString("%1%2")
+          .arg(qstrThreadId).arg(QString::number(nIndex));
+        const std::string str_thread_item_id = qstrThreadItemId.toStdString();
+
+
         QList<QStandardItem*> qlistItems;
         QDateTime dateTime;
         dateTime.setTime_t(std::chrono::system_clock::to_time_t(line->Timestamp()));
@@ -1059,7 +1099,8 @@ QSharedPointer<QStandardItemModel>  DBHandler::getNewConversationItemModel(
         qlistItems.append(new QStandardItem(QString::fromStdString(str_thread_item_id))); // thread_item_id
         qlistItems.append(new QStandardItem(dateTime.toString()));  // Timestamp
         qlistItems.append(new QStandardItem(QString::number(nFolder)));  // Folder
-        if (line->Loading() && line->Text().empty()) {
+
+        if (line->Loading() || line->Text().empty()) {
             qlistItems.append(new QStandardItem(QString("%1...").arg(QObject::tr("Loading"))));  // Body
         }
         else {

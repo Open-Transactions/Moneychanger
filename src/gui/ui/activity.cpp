@@ -295,7 +295,8 @@ void Activity::RefreshAll()
 {
     RefreshUserBar();
     RefreshAccountTab();
-    RefreshConversationsTab();
+
+    QTimer::singleShot(0, this, SLOT(RefreshConversationsTab()));
 }
 
 
@@ -3188,6 +3189,8 @@ void Activity::RefreshConversationsTab()
     {
         pListWidgetConversations->setCurrentRow(nCurrentRow);
     }
+
+    on_listWidgetConversations_currentRowChanged(pListWidgetConversations->currentRow());
 }
 
 
@@ -3261,10 +3264,14 @@ void Activity::resetConversationItemsDataModel(const bool bProvidedIds/*=false*/
 
     if (!bProvidedIds)
     {
-        pNewSourceModel.reset(new QStandardItemModel(nullptr)); // An empty one, since there's no IDs for a real one.
+        qDebug() << "resetConversationItemsDataModel: Using empty source model.";
+        QString qstr1, qstr2; // An empty one, since there's no IDs for a real one.
+        pNewSourceModel = DBHandler::getInstance()->getNewConversationItemModel(qstr1, qstr2);
+//      pNewSourceModel.reset(new QStandardItemModel(nullptr));
     }
     else // bProvidedIds is definitely true...
     {
+        qDebug() << "resetConversationItemsDataModel: Grabbing real source model based on IDs.";
         pNewSourceModel = DBHandler::getInstance()->getNewConversationItemModel(*pstrMyNymID, *pstrThreadID);
     }
     // --------------------------------------------------------
@@ -3276,6 +3283,14 @@ void Activity::resetConversationItemsDataModel(const bool bProvidedIds/*=false*/
     pModelMessages_ = pNewSourceModel;
     pThreadItemsProxyModel_ = pThreadItemsProxyModel;
     // ---------------------------------
+    QItemSelectionModel *m = ui->tableViewConversation->selectionModel();
+
+    if (nullptr != m) {
+        m->deleteLater();
+        m = nullptr;
+    }
+    // ---------------------------------
+    qDebug() << "resetConversationItemsDataModel: setting new proxy model onto tableViewConversation";
     pThreadItemsProxyModel->setTableView(ui->tableViewConversation);
     ui->tableViewConversation->setModel(pThreadItemsProxyModel.data());
 
@@ -3367,7 +3382,7 @@ void Activity::onOpentxsWidgetUpdated(QString qstrWidgetID)
                 // Therefore, if ANY of these Nyms have broadcasted a change to
                 // their activity summary (perhaps including new conversations)
                 // then we need to refresh the conversations tab.
-                RefreshConversationsTab();
+                QTimer::singleShot(0, this, SLOT(RefreshConversationsTab()));
                 return;
             }
         }
@@ -3432,7 +3447,9 @@ void Activity::RefreshConversationDetails(int nRow)
     {
         qDebug() << "WARNING!!! I'm setting active_thread_ to an empty string in Activity::RefreshConversationDetails!!!!";
         active_thread_ = "";
+        ui->plainTextEditMsg->blockSignals(true);
         ui->plainTextEditMsg->setPlainText("");
+        ui->plainTextEditMsg->blockSignals(false);
         resetConversationItemsDataModel();
     }
     else // nRow >=0
@@ -3442,7 +3459,9 @@ void Activity::RefreshConversationDetails(int nRow)
         if (nullptr == conversation_widget) {
             qDebug() << "WARNING!!! I'm setting active_thread_ to an empty string in Activity::RefreshConversationDetails 2!!!!";
             active_thread_ = "";
+            ui->plainTextEditMsg->blockSignals(true);
             ui->plainTextEditMsg->setPlainText("");
+            ui->plainTextEditMsg->blockSignals(false);
             resetConversationItemsDataModel();
             return;
         }
@@ -3457,8 +3476,13 @@ void Activity::RefreshConversationDetails(int nRow)
 
         if (qstrMyNymId.isEmpty())
         {
-            qstrMyNymId = Moneychanger::It()->get_default_nym_id();
-            str_my_nym_id = qstrMyNymId.toStdString();
+            const QVariant currentDataMyNym = ui->comboBoxMyNymChat->currentData();
+
+            if (currentDataMyNym.isValid())
+            {
+                qstrMyNymId = currentDataMyNym.toString();
+                str_my_nym_id = qstrMyNymId.toStdString();
+            }
         }
         else
         {
@@ -3486,7 +3510,9 @@ void Activity::RefreshConversationDetails(int nRow)
             qDebug() << "WARNING!!! I'm setting active_thread_ to an empty string in Activity::RefreshConversationDetails 3!!!!";
 
             active_thread_ = "";
+            ui->plainTextEditMsg->blockSignals(true);
             ui->plainTextEditMsg->setPlainText("");
+            ui->plainTextEditMsg->blockSignals(false);
             resetConversationItemsDataModel();
             return; // Should never happen.
         }
@@ -3502,7 +3528,51 @@ void Activity::RefreshConversationDetails(int nRow)
         //
         const auto nymID = opentxs::Identifier::Factory(str_my_nym_id);
         const auto threadID = opentxs::Identifier::Factory(str_thread_id);
-        auto& thread = Moneychanger::It()->OT().UI().ActivityThread(nymID, threadID);
+
+        qDebug() << "str_my_nym_id: " << QString::fromStdString(str_my_nym_id);
+        qDebug() << "str_thread_id: " << QString::fromStdString(str_thread_id);
+
+        if (opentxs::Messagability::READY !=
+            opentxs::OT::App().Client().Sync().CanMessage(nymID, threadID))
+        {
+            qDebug() << "Skipping contact since he is not yet messagable.";
+
+            active_thread_ = "";
+            resetConversationItemsDataModel();
+            return;
+        }
+        // --------------------------------------------
+        const auto& thread = Moneychanger::It()->OT().UI().ActivityThread(nymID, threadID);
+        const auto first = thread.First();
+
+    //    qDebug() << QString::fromStdString(thread.DisplayName()) << "\n";
+
+        if (false == first->Valid()) {
+            qDebug() << "WARNING! thread had invalid first item, so I'm returning here.";
+
+            active_thread_ = "";
+            ui->plainTextEditMsg->blockSignals(true);
+            ui->plainTextEditMsg->setPlainText("");
+            ui->plainTextEditMsg->blockSignals(false);
+
+            resetConversationItemsDataModel();
+
+            return; // Should never happen.
+        }
+
+
+        if (thread.Participants().size() != 1 ||
+            thread.DisplayName().empty()) {
+            qDebug() << "WARNING! thread had empty participants or empty display name, so I'm returning here to avoid an OT_ASSERT.";
+
+            active_thread_ = "";
+            ui->plainTextEditMsg->blockSignals(true);
+            ui->plainTextEditMsg->setPlainText("");
+            ui->plainTextEditMsg->blockSignals(false);
+
+            resetConversationItemsDataModel();
+            return; // Should never happen.
+        }
 
         active_thread_ = thread.WidgetID()->str();
 
@@ -3511,10 +3581,11 @@ void Activity::RefreshConversationDetails(int nRow)
 
         QString qstrMsg = QString::fromStdString(thread.GetDraft()).simplified();
 
+        ui->plainTextEditMsg->blockSignals(true);
         ui->plainTextEditMsg->setPlainText(qstrMsg);
+        ui->plainTextEditMsg->blockSignals(false);
         // ----------------------------------------------
         resetConversationItemsDataModel(true, &qstrMyNymId, &qstrThreadId);
-
 
 //        const std::string str_my_nym_id = qstrMyNymId.toStdString();
 //        const std::string str_thread_id = qstrThreadId.toStdString();
@@ -3782,7 +3853,7 @@ void Activity::populateNymComboBox(QComboBox * pComboBox)
     // Todo: we're using index here which is cheap. Really should do this
     // based on Nym ID. Todo.
     //
-    if (index_before_refresh < pComboBox->count()) {
+    if (index_before_refresh >= 0 && index_before_refresh < pComboBox->count()) {
         nCurrentIndexToSet = index_before_refresh;
     }
     pComboBox->setCurrentIndex(nCurrentIndexToSet);
@@ -3841,7 +3912,7 @@ void Activity::on_comboBoxMyNym_activated(int index)
 
 void Activity::on_comboBoxMyNymChat_activated(int index)
 {
-    QTimer::singleShot(0, this, SLOT(RefreshSummaryTree()));
+    QTimer::singleShot(0, this, SLOT(RefreshConversationsTab()));
 }
 
 void Activity::on_comboBoxCurrency_activated(int index)
@@ -4138,7 +4209,27 @@ void Activity::on_plainTextEditMsg_textChanged()
                 //
                 const auto nymID = opentxs::Identifier::Factory(str_my_nym_id);
                 const auto threadID = opentxs::Identifier::Factory(str_thread_id);
+
+                qDebug() << "str_my_nym_id: " << QString::fromStdString(str_my_nym_id);
+                qDebug() << "str_thread_id: " << QString::fromStdString(str_thread_id);
+
+
+                if (opentxs::Messagability::READY !=
+                    opentxs::OT::App().Client().Sync().CanMessage(nymID, threadID))
+                {
+        //          QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Sorry, but the selected contact is not yet messagable.") );
+
+                    qDebug() << "Skipping set draft for contact since he is not yet messagable.";
+
+                    return;
+                }
+                // --------------------------------------------
+
                 auto& thread = Moneychanger::It()->OT().UI().ActivityThread(nymID, threadID);
+
+//                if (thread.Participants().empty() || thread.DisplayName().empty()) {
+//                    return;
+//                }
                 const auto loaded = thread.SetDraft(message);
 
                 OT_ASSERT(loaded)
@@ -7803,9 +7894,10 @@ void Activity::on_toolButtonAddContact_clicked()
 //}
 
 
+
 // This is on the accounts tab.
 //
-void Activity::on_toolButtonPay_triggered(QAction *arg1)
+void Activity::on_toolButtonPay_clicked()
 {
     // See if there's a Nym selected.  (There should be)
     // Ideally an account is already selected. (Should be).
@@ -7909,10 +8001,9 @@ void Activity::on_toolButtonPay_triggered(QAction *arg1)
 }
 
 
-
 // This is on the Conversations tab.
 //
-void Activity::on_toolButtonMsgContact_triggered(QAction *arg1)
+void Activity::on_toolButtonMsgContact_clicked()
 {
     QString  qstrSelectedMyNymId;
     QString  qstrSelectedThreadId;
@@ -7923,10 +8014,65 @@ void Activity::on_toolButtonMsgContact_triggered(QAction *arg1)
         qstrSelectedThreadId,
         qstrActivitySummaryId
         );
+    // ----------------------------------------
+    opentxs::OTIdentifier currentNymId = qstrSelectedMyNymId.isEmpty()
+            ? opentxs::Identifier::Factory()
+            : opentxs::Identifier::Factory(qstrSelectedMyNymId.toStdString());
 
-    if (!bRetrieved || qstrSelectedMyNymId.isEmpty() || qstrSelectedThreadId.isEmpty()) {
+    if (qstrSelectedMyNymId.isEmpty())
+    {
+        // There may not be any conversation selected, and thus we wouldn't
+        // have the NymId from the "selected conversation" (since there is none).
+        // Therefore we grab the NymId from the drop-down instead.
+        //
+        const QVariant currentDataMyNym = ui->comboBoxMyNymChat->currentData();
+
+        if (currentDataMyNym.isValid())
+        {
+            qstrSelectedMyNymId = currentDataMyNym.toString();
+            currentNymId = opentxs::Identifier::Factory(qstrSelectedMyNymId.toStdString());
+        }
+    }
+
+    if (qstrSelectedMyNymId.isEmpty())
+    {
+        qDebug() << "on_toolButtonMsgContact_clicked: No Nym is selected. Probably the button should have been greyed out, too.";
         return;
     }
+    // ----------------------------------------
+    if (qstrSelectedThreadId.isEmpty())
+    {
+        // Pop up a Contact selection box. The user chooses an existing contact.
+        //
+        DlgChooser theChooser(this);
+        // -----------------------------------------------
+        mapIDName & the_map = theChooser.m_map;
+//      const bool bGotContacts = MTContactHandler::getInstance()->GetOpentxsContacts(the_map);
+        const bool bGotContacts = MTContactHandler::getInstance()->GetOpentxsContacts(the_map, currentNymId);
+//      const bool bGotContacts = MTContactHandler::getInstance()->GetOpentxsContacts(the_map, nymID, nCurrencyType);
+
+        if (!bGotContacts) {
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
+                                 tr("You have no messageable contacts, sorry. Try adding a contact."));
+            return;
+        }
+        // -----------------------------------------------
+        theChooser.setWindowTitle(tr("Choose a contact"));
+        if (theChooser.exec() != QDialog::Accepted)
+            return;
+        // -----------------------------------------------
+        const QString qstrContactId = theChooser.GetCurrentID();
+        if (qstrContactId.isEmpty())
+            return;
+        // --------------------------------------------
+        // I'm doing this here just in case it ensures creation of the thread.
+//        const opentxs::OTIdentifier threadID = opentxs::Identifier::Factory(qstrContactId.toStdString());
+//        auto& thread = opentxs::OT::App().Client().UI().ActivityThread(currentNymId, threadID);
+//        QTimer::singleShot(500, this, SLOT(RefreshConversationsTab())); // If the above call worked, then this call should add the thread to the UI...
+        emit messageContact(qstrSelectedMyNymId, qstrContactId);
+        return;
+    }
+    // --------------------------------------------
     const std::string str_my_nym_id = qstrSelectedMyNymId.toStdString();
     const std::string str_thread_id = qstrSelectedThreadId.toStdString();
     // --------------------------------------------
@@ -7938,6 +8084,17 @@ void Activity::on_toolButtonMsgContact_triggered(QAction *arg1)
     if (!qstrPlainText.isEmpty())
     {
         const std::string message {qstrPlainText.toStdString()};
+
+        qDebug() << "str_my_nym_id: " << QString::fromStdString(str_my_nym_id);
+        qDebug() << "str_thread_id: " << QString::fromStdString(str_thread_id);
+
+        if (opentxs::Messagability::READY !=
+            opentxs::OT::App().Client().Sync().CanMessage(nymID, threadID))
+        {
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Sorry, but the selected contact is not yet messagable.") );
+            return;
+        }
+        // --------------------------------------------
         auto& thread = Moneychanger::It()->OT().UI().ActivityThread(nymID, threadID);
 
         // NOTE: Normally I'd assume that the draft is already set by
@@ -7951,7 +8108,10 @@ void Activity::on_toolButtonMsgContact_triggered(QAction *arg1)
 
         const auto sent = thread.SendDraft();
         if (sent) {
+
+            ui->plainTextEditMsg->blockSignals(true);
             ui->plainTextEditMsg->setPlainText("");
+            ui->plainTextEditMsg->blockSignals(false);
         }
     }
 }
@@ -7985,9 +8145,10 @@ bool Activity::GetAccounts(mapIDName & mapOutput, const int nCurrencyType/*=0*/,
 }
 
 
+
 // This is on the Conversations tab.
 //
-void Activity::on_toolButtonPayContact_triggered(QAction *arg1)
+void Activity::on_toolButtonPayContact_clicked()
 {
     QListWidgetItem * conversation_widget = ui->listWidgetConversations->currentItem();
 
@@ -8115,7 +8276,7 @@ void Activity::on_toolButtonInvoiceContact_clicked()
 }
 
 
-void Activity::on_toolButtonDeposit_triggered(QAction *arg1)
+void Activity::on_toolButtonDeposit_clicked()
 {
 //    QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
 
@@ -8449,7 +8610,7 @@ void Activity::on_toolButtonDeposit_triggered(QAction *arg1)
 
 // *********************************************************************
 
-void Activity::on_toolButtonWithdraw_triggered(QAction *arg1)
+void Activity::on_toolButtonWithdraw_clicked()
 {
 //    QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
 
@@ -8917,3 +9078,8 @@ void Activity::on_toolButton_decrypt_clicked() { emit sig_on_toolButton_decrypt_
 void Activity::on_toolButton_transport_clicked() { emit sig_on_toolButton_transport_clicked(); }
 void Activity::on_toolButton_liveAgreements_clicked() { emit sig_on_toolButton_liveAgreements_clicked(); }
 
+
+void Activity::on_toolButtonManageContacts_clicked()
+{
+    emit showContacts();
+}

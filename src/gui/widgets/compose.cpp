@@ -533,17 +533,60 @@ bool MTCompose::sendMessage(QString subject,   QString body, QString fromNymId, 
     // ----------------------------------------------------
     if (bCanMessage_)
     {
-        const auto bgthreadId =
-            Moneychanger::It()->OT().Sync().
-                MessageContact(opentxs::Identifier::Factory(str_fromNymId), opentxs::Identifier::Factory(qstrContactId_.toStdString()), contents.toStdString());
+//        const auto bgthreadId =
+//            Moneychanger::It()->OT().Sync().
+//                MessageContact(opentxs::Identifier::Factory(str_fromNymId), opentxs::Identifier::Factory(qstrContactId_.toStdString()), contents.toStdString());
 
-        const auto status = Moneychanger::It()->OT().Sync().Status(bgthreadId);
+//        const auto status = Moneychanger::It()->OT().Sync().Status(bgthreadId);
 
-        const bool bAddToGUI = (opentxs::ThreadStatus::FINISHED_SUCCESS == status) ||
-                               (opentxs::ThreadStatus::RUNNING == status);
-        if (bAddToGUI) {
-            const bool bUseGrayText = (opentxs::ThreadStatus::FINISHED_SUCCESS != status);
-            m_bSent = true; // This means it's queued, not actually sent to the notary yet.
+//        const bool bAddToGUI = (opentxs::ThreadStatus::FINISHED_SUCCESS == status) ||
+//                               (opentxs::ThreadStatus::RUNNING == status);
+//        if (bAddToGUI) {
+//            const bool bUseGrayText = (opentxs::ThreadStatus::FINISHED_SUCCESS != status);
+//            m_bSent = true; // This means it's queued, not actually sent to the notary yet.
+//        }
+        // --------------------------------------------
+        const std::string str_thread_id = qstrContactId_.toStdString();
+        // --------------------------------------------
+        const opentxs::OTIdentifier nymID    = opentxs::Identifier::Factory(str_fromNymId);
+        const opentxs::OTIdentifier threadID = opentxs::Identifier::Factory(str_thread_id);
+        // --------------------------------------------
+        const QString qstrPlainText = contents.simplified();
+
+        if (!qstrPlainText.isEmpty())
+        {
+            const std::string message {qstrPlainText.toStdString()};
+
+            qDebug() << "str_fromNymId: " << QString::fromStdString(str_fromNymId);
+            qDebug() << "str_thread_id: " << QString::fromStdString(str_thread_id);
+
+            if (opentxs::Messagability::READY !=
+                opentxs::OT::App().Client().Sync().CanMessage(nymID, threadID))
+            {
+                qDebug() << "Contact is not yet messageable, aborting.";
+                return false;
+            }
+            // --------------------------------------------
+
+            auto& thread = opentxs::OT::App().Client().UI().ActivityThread(nymID, threadID);
+
+
+            qDebug() << "MTCompose::sendMessage:  fromNymId: " << fromNymId << " and threadID: " << qstrContactId_;
+
+            // NOTE: Normally I'd assume that the draft is already set by
+            // the time we get to this point. But since we're here, might
+            // as well make sure we have the very latest version before we
+            // send it out.
+            //
+            const auto loaded = thread.SetDraft(message);
+
+            OT_ASSERT(loaded)
+
+            const auto sent = thread.SendDraft();
+            if (sent) {
+                qDebug() << "Success setting and sending draft.";
+                m_bSent = true;
+            }
         }
     }
     // ----------------------------------------------------

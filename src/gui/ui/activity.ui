@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidgetMain">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tabAccounts">
       <attribute name="title">
@@ -274,6 +274,13 @@
                 </property>
                 <property name="text">
                  <string>Add Contact</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="toolButtonManageContacts">
+                <property name="text">
+                 <string>Contacts</string>
                 </property>
                </widget>
               </item>

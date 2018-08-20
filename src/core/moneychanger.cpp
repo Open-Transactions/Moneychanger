@@ -6581,7 +6581,16 @@ void Moneychanger::mc_composemessage_slot()
 //Send a message, optionally from a given Nym and optionally to a given Contact.
 void Moneychanger::mc_message_contact_slot(QString qstrFromNym, QString qstrToOpentxsContact) // Compose Message to specific opentxs contact
 {
-    mc_composemessage_show_dialog(qstrToOpentxsContact, qstrFromNym);
+    if (opentxs::Messagability::READY ==
+        opentxs::OT::App().Client().Sync().CanMessage(opentxs::Identifier::Factory(qstrFromNym.toStdString()),
+                                                      opentxs::Identifier::Factory(qstrToOpentxsContact.toStdString())))
+    {
+        mc_composemessage_show_dialog(qstrToOpentxsContact, qstrFromNym);
+    }
+    else
+    {
+        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Sorry, but the selected contact is not yet messagable."));
+    }
 }
 
 void Moneychanger::mc_composemessage_show_dialog(QString qstrToOpentxsContact/*=""*/, QString qstrFromNym/*=""*/)

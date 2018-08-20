@@ -269,7 +269,6 @@ protected:
     void RefreshUserBar();
     void RefreshAccountTab();
     void ClearAccountTree();
-    void RefreshConversationsTab();
     void RefreshConversationDetails(int nRow);
     void ClearListWidgetConversations();
 
@@ -360,6 +359,8 @@ private slots:
 //  void RefreshPayments();
     void NewRefreshPayments();
 
+    void RefreshConversationsTab();
+
 //    void on_tableViewReceived_customContextMenuRequested(const QPoint &pos);
     void on_tableViewPayments_customContextMenuRequested(const QPoint &pos);
 
@@ -401,17 +402,15 @@ private slots:
 
     void on_comboBoxMyNym_activated(int index);
     void on_comboBoxCurrency_activated(int index);
-
     void on_comboBoxMyNymChat_activated(int index);
 
-    void on_toolButtonPayContact_triggered(QAction *arg1);
-    void on_toolButtonPay_triggered(QAction *arg1);
+    void on_toolButtonDeposit_clicked();
+    void on_toolButtonWithdraw_clicked();
+    void on_toolButtonPay_clicked();
+    void on_toolButtonPayContact_clicked();
+    void on_toolButtonMsgContact_clicked();
 
-    void on_toolButtonMsgContact_triggered(QAction *arg1);
-
-    void on_toolButtonDeposit_triggered(QAction *arg1);
-
-    void on_toolButtonWithdraw_triggered(QAction *arg1);
+    void on_toolButtonManageContacts_clicked();
 
 private:
     Ui::Activity *ui{nullptr};
