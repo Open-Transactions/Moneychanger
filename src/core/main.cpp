@@ -56,10 +56,11 @@ public:
         password_caller_->setCallback(password_callback_.get());
         assert(password_caller_->isCallbackSet());
         // ----------------------------------------
-        opentxs::OT::ClientFactory({}, {}, password_caller_.get());
+        const opentxs::api::client::Manager& manager = opentxs::OT::ClientFactory({}, {}, password_caller_.get());
 #else
-        opentxs::OT::ClientFactory({}, {});
+        const opentxs::api::client::Manager& manager = opentxs::OT::ClientFactory({}, {});
 #endif
+        pManager_ = &manager;
     }
     ~__OTclient_RAII()
     {
@@ -70,6 +71,11 @@ public:
         password_callback_.reset();
 #endif
     }
+
+public:
+    const opentxs::api::client::Manager& Manager() { return *pManager_; }
+private:
+    const opentxs::api::client::Manager* pManager_{nullptr};
 
 #ifndef OT_NO_PASSWORD
 private:
@@ -82,10 +88,12 @@ private:
 
 int main(int argc, char *argv[])
 {
+    QScopedPointer<Moneychanger> pMoneychanger{nullptr};
+
     // NB: you don't really have to do this if your library links ok
     // but I tested it and it works and gives a nice message, rw.
     //
-    //QLibrary otapi("libotapi.so");     // <===== FIRST constructor called.
+    //QLibrary otapi("libotapi.so");
     //if (!otapi.load())
     //    qDebug() << otapi.errorString();
     //if (otapi.load())
@@ -95,9 +103,11 @@ int main(int argc, char *argv[])
     // AppCleanup() will be called automatically when we exit main(),
     // by this same object's destructor.)
     //
-    __OTclient_RAII the_client_cleanup;  // <===== SECOND constructor is called here.
+    __OTclient_RAII the_client_cleanup;
+
     //Init qApp
-    MTApplicationMC theApplication(argc, argv);  // <====== THIRD constructor (they are destroyed in reverse order.)
+    MTApplicationMC theApplication(argc, argv, pMoneychanger,
+                                   the_client_cleanup.Manager());
     theApplication.setApplicationName(MONEYCHANGER_APP_NAME); // Access later using QCoreApplication::applicationName()
     theApplication.setQuitOnLastWindowClosed(false);
 
@@ -160,7 +170,7 @@ int main(int argc, char *argv[])
     int nExec = theApplication.exec(); // <=== Here's where we run the QApplication...
     // ----------------------------------------------------------------
 
-    Moneychanger::It(NULL, true); // bShuttingDown=true.
+    Moneychanger::It(true); // bShuttingDown=true.
 
     // ----------------------------------------------------------------
     opentxs::Log::vOutput(0, "Finished executing the QApplication!\n(AppCleanup should occur "

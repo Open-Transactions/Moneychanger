@@ -89,14 +89,22 @@ bool Moneychanger::is_base64(QString string)
 /**
  * Constructor & Destructor
  **/
-
+// Ownership passes to caller.
 //static
-Moneychanger * Moneychanger::It(QWidget *parent/*=0*/, bool bShuttingDown/*=false*/)
+Moneychanger * Moneychanger::Instantiate(const opentxs::api::client::Manager& manager, QWidget *parent/*=0*/)
 {
-    // NOTE: parent is only used the first time this function is called.
-    // (And the last time.)
-    //
-    static QScopedPointer<Moneychanger> pMoneychanger(new Moneychanger(parent));
+    return new Moneychanger(manager, parent);
+}
+
+static Moneychanger * It(bool bShuttingDown = false,
+                         QScopedPointer<Moneychanger> * pMoneychangerMain = nullptr);
+
+// NOT owned by caller.
+//static
+Moneychanger * Moneychanger::It(bool bShuttingDown/*=false*/, QScopedPointer<Moneychanger> * pMoneychangerMain/*=nullptr*/)
+{
+    // See main.cpp
+    static QScopedPointer<Moneychanger> & pMoneychanger = *pMoneychangerMain;
 
     if (bShuttingDown)
     {
@@ -109,15 +117,17 @@ Moneychanger * Moneychanger::It(QWidget *parent/*=0*/, bool bShuttingDown/*=fals
         //
         pMoneychanger->disconnect();
         delete pMoneychanger.take();
-        return NULL;
+        return nullptr;
     }
     // -------------------------------------
+    if (pMoneychanger.isNull())
+        return nullptr;
     return pMoneychanger.data();
 }
 
-Moneychanger::Moneychanger(QWidget *parent)
+Moneychanger::Moneychanger(const opentxs::api::client::Manager& manager, QWidget *parent)
 : QWidget(parent),
-  ot_(Moneychanger::It()->OT()),
+  ot_(manager),
   notify_bailment_callback_(opentxs::network::zeromq::ListenCallback::Factory(
           [this](const opentxs::network::zeromq::Message& message) -> void {
               this->process_notify_bailment(message);
@@ -134,15 +144,7 @@ Moneychanger::Moneychanger(QWidget *parent)
           })),
   widget_update_(ot_.ZMQ().Context().SubscribeSocket(widget_update_callback_)),
 //  m_list(*(new MTNameLookupQT)),
-  mc_overall_init(false),
-  nym_list_id(NULL),
-  nym_list_name(NULL),
-  server_list_id(NULL),
-  server_list_name(NULL),
-  asset_list_id(NULL),
-  asset_list_name(NULL),
-  account_list_id(NULL),
-  account_list_name(NULL)
+  mc_overall_init(false)
 {
     /**
      ** Init variables *

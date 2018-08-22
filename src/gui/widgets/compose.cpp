@@ -533,19 +533,6 @@ bool MTCompose::sendMessage(QString subject,   QString body, QString fromNymId, 
     // ----------------------------------------------------
     if (bCanMessage_)
     {
-//        const auto bgthreadId =
-//            Moneychanger::It()->OT().Sync().
-//                MessageContact(opentxs::Identifier::Factory(str_fromNymId), opentxs::Identifier::Factory(qstrContactId_.toStdString()), contents.toStdString());
-
-//        const auto status = Moneychanger::It()->OT().Sync().Status(bgthreadId);
-
-//        const bool bAddToGUI = (opentxs::ThreadStatus::FINISHED_SUCCESS == status) ||
-//                               (opentxs::ThreadStatus::RUNNING == status);
-//        if (bAddToGUI) {
-//            const bool bUseGrayText = (opentxs::ThreadStatus::FINISHED_SUCCESS != status);
-//            m_bSent = true; // This means it's queued, not actually sent to the notary yet.
-//        }
-        // --------------------------------------------
         const std::string str_thread_id = qstrContactId_.toStdString();
         // --------------------------------------------
         const opentxs::OTIdentifier nymID    = opentxs::Identifier::Factory(str_fromNymId);
@@ -567,25 +554,40 @@ bool MTCompose::sendMessage(QString subject,   QString body, QString fromNymId, 
                 return false;
             }
             // --------------------------------------------
-
             auto& thread = Moneychanger::It()->OT().UI().ActivityThread(nymID, threadID);
 
+            if (thread.Participants().size() > 0)
+            {
+                qDebug() << "MTCompose::sendMessage:  fromNymId: " << fromNymId << " and threadID: " << qstrContactId_;
 
-            qDebug() << "MTCompose::sendMessage:  fromNymId: " << fromNymId << " and threadID: " << qstrContactId_;
+                // NOTE: Normally I'd assume that the draft is already set by
+                // the time we get to this point. But since we're here, might
+                // as well make sure we have the very latest version before we
+                // send it out.
+                //
+                const auto loaded = thread.SetDraft(message);
 
-            // NOTE: Normally I'd assume that the draft is already set by
-            // the time we get to this point. But since we're here, might
-            // as well make sure we have the very latest version before we
-            // send it out.
-            //
-            const auto loaded = thread.SetDraft(message);
+                OT_ASSERT(loaded)
 
-            OT_ASSERT(loaded)
+                const auto sent = thread.SendDraft();
+                if (sent) {
+                    qDebug() << "Success setting and sending draft.";
+                    m_bSent = true;
+                }
+            }
+            else {
+                const auto bgthreadId =
+                    Moneychanger::It()->OT().Sync().
+                        MessageContact(nymID, threadID, contents.toStdString());
 
-            const auto sent = thread.SendDraft();
-            if (sent) {
-                qDebug() << "Success setting and sending draft.";
-                m_bSent = true;
+                const auto status = Moneychanger::It()->OT().Sync().Status(bgthreadId);
+
+                const bool bAddToGUI = (opentxs::ThreadStatus::FINISHED_SUCCESS == status) ||
+                                       (opentxs::ThreadStatus::RUNNING == status);
+                if (bAddToGUI) {
+                    const bool bUseGrayText = (opentxs::ThreadStatus::FINISHED_SUCCESS != status);
+                    m_bSent = true; // This means it's queued, not actually sent to the notary yet.
+                }
             }
         }
     }
@@ -595,7 +597,10 @@ bool MTCompose::sendMessage(QString subject,   QString body, QString fromNymId, 
         std::string strResponse; {
             MTSpinner theSpinner;
             auto action = Moneychanger::It()->OT().ServerAction().SendMessage(
-                    opentxs::Identifier::Factory(str_fromNymId), opentxs::Identifier::Factory(str_NotaryID), opentxs::Identifier::Factory(str_toNymId), contents.toStdString());
+                    opentxs::Identifier::Factory(str_fromNymId),
+                    opentxs::Identifier::Factory(str_NotaryID),
+                    opentxs::Identifier::Factory(str_toNymId),
+                    contents.toStdString());
             strResponse = action->Run();
         }
 

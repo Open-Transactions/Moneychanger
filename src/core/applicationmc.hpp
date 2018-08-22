@@ -5,6 +5,10 @@
 #include "core/ExportWrapper.h"
 
 #include <QApplication>
+#include <QScopedPointer>
+
+#include <core/moneychanger.hpp>
+#include <opentxs/opentxs.hpp>
 
 
 class MTApplicationMC : public QApplication
@@ -12,7 +16,11 @@ class MTApplicationMC : public QApplication
     Q_OBJECT
 
 public:
-    MTApplicationMC(int &argc, char **argv);
+    MTApplicationMC(
+            int &argc,
+            char **argv,
+            QScopedPointer<Moneychanger> & pMoneychanger,
+            const opentxs::api::client::Manager& manager);
     virtual ~MTApplicationMC();
 
 public slots:
