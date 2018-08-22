@@ -54,7 +54,7 @@ private:
 //    opentxs::OTRecordList   m_list;
     // ------------------------------------------------
     /** Constructor & Destructor **/
-    Moneychanger(QWidget *parent = 0);
+    Moneychanger(const opentxs::api::client::Manager& manager, QWidget *parent = 0);
 
     const opentxs::api::client::Manager& ot_;
     std::atomic<std::uint64_t> refresh_count_;
@@ -89,7 +89,11 @@ public:
 
     virtual ~Moneychanger();
 
-    static Moneychanger * It(QWidget *parent = 0, bool bShuttingDown = false);
+    // Ownership passes to caller.
+    static Moneychanger * Instantiate(const opentxs::api::client::Manager& manager, QWidget *parent = nullptr);
+    // NOT owned by caller.
+    static Moneychanger * It(bool bShuttingDown = false,
+                             QScopedPointer<Moneychanger> * pMoneychangerMain = nullptr);
 
     int64_t HasUsageCredits(const std::string & notary_id,
                             const std::string & NYM_ID);
@@ -363,14 +367,14 @@ private:
     void mc_log_dialog(QString qstrAppend=QString(""));
     void mc_createinsurancecompany_dialog();
     // ------------------------------------------------
-    QList<QVariant> * nym_list_id=nullptr;
-    QList<QVariant> * nym_list_name=nullptr;
+    QList<QVariant> * nym_list_id{nullptr};
+    QList<QVariant> * nym_list_name{nullptr};
     // ---------------------------------------------------------
     QString default_nym_id;
     QString default_nym_name;
     // ---------------------------------------------------------
-    QList<QVariant> * server_list_id=nullptr;
-    QList<QVariant> * server_list_name=nullptr;
+    QList<QVariant> * server_list_id{nullptr};
+    QList<QVariant> * server_list_name{nullptr};
     // ---------------------------------------------------------
     QString default_notary_id;
     QString default_server_name;
@@ -434,8 +438,8 @@ private:
     // ---------------------------------------------------------
     QPointer<QMenu> mc_systrayMenu_asset;
     // ---------------------------------------------------------
-    QList<QVariant> * asset_list_id = nullptr;
-    QList<QVariant> * asset_list_name = nullptr;
+    QList<QVariant> * asset_list_id{nullptr};
+    QList<QVariant> * asset_list_name{nullptr};
     // ---------------------------------------------------------
     QString default_asset_id;
     QString default_asset_name;
@@ -446,8 +450,8 @@ private:
     QPointer<QMenu> mc_systrayMenu_exchange;
     QPointer<QMenu> mc_systrayMenu_messaging;
     // ---------------------------------------------------------
-    QList<QVariant> * account_list_id = nullptr;
-    QList<QVariant> * account_list_name = nullptr;
+    QList<QVariant> * account_list_id{nullptr};
+    QList<QVariant> * account_list_name{nullptr};
     // ---------------------------------------------------------
     QString default_account_id;
     QString default_account_name;

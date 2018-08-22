@@ -20,10 +20,15 @@
 
 
 
-MTApplicationMC::MTApplicationMC(int &argc, char **argv)
+MTApplicationMC::MTApplicationMC(
+    int &argc,
+    char **argv,
+    QScopedPointer<Moneychanger> & pMoneychanger,
+    const opentxs::api::client::Manager& manager)
     : QApplication(argc, argv)
 {
-
+    Moneychanger::It(false, &pMoneychanger);
+    pMoneychanger.reset(Moneychanger::Instantiate(manager, nullptr));
 }
 
 MTApplicationMC::~MTApplicationMC()
@@ -40,15 +45,11 @@ void MTApplicationMC::appStarting()
     //Compiled details
     QString mc_window_title = mc_app_name+" | "+mc_version;
     // ----------------------------------------
-    // Load OTAPI Wallet
-    //
-    Moneychanger::It()->OT().Exec().LoadWallet();
-    // ----------------------------------------
     /** Init Moneychanger code (Start when necessary below) **/
 
-    QPointer<Moneychanger> pMoneychanger = Moneychanger::It();
+    Moneychanger * pMoneychanger = Moneychanger::It();
 
-    pMoneychanger->installEventFilter(pMoneychanger.data());
+    pMoneychanger->installEventFilter(pMoneychanger);
 
     /** Check Systray capabilities **/
     // This app relies on system tray capabilites;
@@ -62,13 +63,13 @@ void MTApplicationMC::appStarting()
          *Open dialog that will tell the user system tray is not available
          */
         //Create dialog
-        QDialog * systray_notsupported = new QDialog(0);
+        QDialog * systray_notsupported = new QDialog(nullptr);
 
         //Add details to the dialog window
         systray_notsupported->setWindowTitle(mc_window_title);
 
         //Create a vertical box to add to the dialog so multiple objects can be added to the window
-        QVBoxLayout * systray_notsupported_vboxlayout = new QVBoxLayout(0);
+        QVBoxLayout * systray_notsupported_vboxlayout = new QVBoxLayout(nullptr);
         systray_notsupported->setLayout(systray_notsupported_vboxlayout);
 
         /* Add things to dialog */
