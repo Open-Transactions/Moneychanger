@@ -254,8 +254,8 @@ protected:
     void enableButtons();
     void disableButtons();
 
-//    void doSearchConversations(QString qstrInput);
-//    void doSearchPayments(QString qstrInput);
+//  void doSearchConversations(QString qstrInput);
+//  void doSearchPayments(QString qstrInput);
 
     ACTIVITY_TREE_ITEM make_tree_item(QString & qstrCurrentTLA, QString & qstrCurrentNotary, QString & qstrCurrentAccount, QString & qstrCurrentContact);
     void set_inbox_pmntid_for_tree_item(ACTIVITY_TREE_ITEM & theItem, int nPmntID);
@@ -279,8 +279,8 @@ protected:
         const std::string & activity_summary_id,
         QListWidgetItem  *& pItemToSelect);
 
-//    int PairedNodeCount(std::set<opentxs::Identifier> * pUniqueServers=nullptr);
-//    bool PairingStarted(const opentxs::Identifier & nymId, const opentxs::Identifier & issuerNymId);
+//  int PairedNodeCount(std::set<opentxs::Identifier> * pUniqueServers=nullptr);
+//  bool PairingStarted(const opentxs::Identifier & nymId, const opentxs::Identifier & issuerNymId);
 
     mapIDName & GetOrCreateAssetIdMapByCurrencyCode(QString qstrTLA, mapOfMapIDName & bigMap);
     void GetAssetIdMapsByCurrencyCode(mapOfMapIDName & bigMap);
@@ -336,16 +336,16 @@ private slots:
 
     void on_plainTextEditMsg_textChanged();
 
-//    void on_checkBoxSearchConversations_toggled(bool checked);
-//    void on_pushButtonSearchConversations_clicked();
-//    void on_lineEditSearchConversations_textChanged(const QString &arg1);
-//    void on_lineEditSearchConversations_returnPressed();
+//  void on_checkBoxSearchConversations_toggled(bool checked);
+//  void on_pushButtonSearchConversations_clicked();
+//  void on_lineEditSearchConversations_textChanged(const QString &arg1);
+//  void on_lineEditSearchConversations_returnPressed();
 
-//    void on_checkBoxSearchPayments_toggled(bool checked);
-//    void on_lineEditSearchPayments_textChanged(const QString &arg1);
+//  void on_checkBoxSearchPayments_toggled(bool checked);
+//  void on_lineEditSearchPayments_textChanged(const QString &arg1);
 
     void on_tableViewPaymentsSelectionModel_currentRowChanged(const QModelIndex & current, const QModelIndex & previous);
-//    void on_tableViewReceivedSelectionModel_currentRowChanged(const QModelIndex & current, const QModelIndex & previous);
+//  void on_tableViewReceivedSelectionModel_currentRowChanged(const QModelIndex & current, const QModelIndex & previous);
 
     void on_tabWidgetTransactions_currentChanged(int index);
 
@@ -361,11 +361,11 @@ private slots:
 
     void RefreshConversationsTab();
 
-//    void on_tableViewReceived_customContextMenuRequested(const QPoint &pos);
+//  void on_tableViewReceived_customContextMenuRequested(const QPoint &pos);
     void on_tableViewPayments_customContextMenuRequested(const QPoint &pos);
 
     void on_tableViewPayments_doubleClicked(const QModelIndex &index);
-//    void on_tableViewReceived_doubleClicked(const QModelIndex &index);
+//  void on_tableViewReceived_doubleClicked(const QModelIndex &index);
 
     void on_toolButtonReply_clicked();
     void on_toolButtonForward_clicked();
@@ -411,6 +411,8 @@ private slots:
     void on_toolButtonMsgContact_clicked();
 
     void on_toolButtonManageContacts_clicked();
+
+    void on_toolButtonSettings_2_clicked();
 
 private:
     Ui::Activity *ui{nullptr};
