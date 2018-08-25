@@ -7613,11 +7613,11 @@ Activity::Activity(QWidget *parent) :
     connect(this, SIGNAL(sig_on_toolButton_decrypt_clicked()), Moneychanger::It(), SLOT(mc_crypto_decrypt_slot()));
     connect(this, SIGNAL(sig_on_toolButton_liveAgreements_clicked()), Moneychanger::It(), SLOT(mc_agreements_slot()));
     // --------------------------------------------------
-//    connect(ui->toolButtonAddContact, SIGNAL(clicked()), this, SLOT(on_toolButtonAddContact_clicked()));
-//    connect(ui->toolButtonPayContact, SIGNAL(clicked()), this, SLOT(on_toolButtonPayContact_clicked()));
-//    connect(ui->toolButtonMsgContact, SIGNAL(clicked()), this, SLOT(on_toolButtonMsgContact_clicked()));
-//    connect(ui->toolButtonInvoiceContact, SIGNAL(clicked()), this, SLOT(on_toolButtonInvoiceContact_clicked()));
-//    connect(ui->toolButtonImportCash, SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_import_slot()));
+//  connect(ui->toolButtonAddContact, SIGNAL(clicked()), this, SLOT(on_toolButtonAddContact_clicked()));
+//  connect(ui->toolButtonPayContact, SIGNAL(clicked()), this, SLOT(on_toolButtonPayContact_clicked()));
+//  connect(ui->toolButtonMsgContact, SIGNAL(clicked()), this, SLOT(on_toolButtonMsgContact_clicked()));
+//  connect(ui->toolButtonInvoiceContact, SIGNAL(clicked()), this, SLOT(on_toolButtonInvoiceContact_clicked()));
+//  connect(ui->toolButtonImportCash, SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_import_slot()));
 
     icon_nym_ = QIcon(":/icons/icons/identity_BW.png");
 
@@ -8153,6 +8153,9 @@ void Activity::on_toolButtonPayContact_clicked()
     QListWidgetItem * conversation_widget = ui->listWidgetConversations->currentItem();
 
     if (nullptr == conversation_widget) {
+        QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME),
+            tr("Sorry, but there is no contact selected for you to send a payment to. "
+               "Perhaps try adding a contact first, and then try to pay him?"));
         return;
     }
     QString qstrAccountId;
@@ -8164,6 +8167,7 @@ void Activity::on_toolButtonPayContact_clicked()
     const QString  qstrThreadId = qvarThreadId.isValid() ? qvarThreadId.toString() : QString("");
 
     if (qstrMyNymId.isEmpty() || qstrThreadId.isEmpty()) {
+        qDebug() << "Activity::on_toolButtonPayContact_clicked: Either Nym ID or Contact ID is empty. Returning. Failed.";
         return;
     }
     const QString  qstrContactId = qstrThreadId;
@@ -8217,6 +8221,9 @@ void Activity::on_toolButtonInvoiceContact_clicked()
     QListWidgetItem * conversation_widget = ui->listWidgetConversations->currentItem();
 
     if (nullptr == conversation_widget) {
+        QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME),
+            tr("Sorry, but there is no contact selected for you to send an invoice to. "
+               "Perhaps try adding a contact first, and then try to pay him?"));
         return;
     }
     QString qstrAccountId;
@@ -8228,6 +8235,7 @@ void Activity::on_toolButtonInvoiceContact_clicked()
     const QString  qstrThreadId = qvarThreadId.isValid() ? qvarThreadId.toString() : QString("");
 
     if (qstrMyNymId.isEmpty() || qstrThreadId.isEmpty()) {
+        qDebug() << "Activity::on_toolButtonInvoiceContact_clicked: Either Nym ID or Contact ID is empty. Returning. Failed.";
         return;
     }
     const QString  qstrContactId = qstrThreadId;
@@ -8275,7 +8283,7 @@ void Activity::on_toolButtonInvoiceContact_clicked()
     emit requestToAccountFromContact(qstrAccountId, qstrContactId);
 }
 
-
+// Accounts tab.
 void Activity::on_toolButtonDeposit_clicked()
 {
     // See if there's a Nym selected.  (There should be)
@@ -8411,7 +8419,7 @@ void Activity::on_toolButtonDeposit_clicked()
 
 // *********************************************************************
 
-
+// Accounts tab
 void Activity::on_toolButtonWithdraw_clicked()
 {
     // See if there's a Nym selected.  (There should be)
@@ -8597,4 +8605,11 @@ void Activity::on_toolButton_liveAgreements_clicked() { emit sig_on_toolButton_l
 void Activity::on_toolButtonManageContacts_clicked()
 {
     emit showContacts();
+}
+
+void Activity::on_toolButtonSettings_2_clicked()
+{
+    qDebug() << "on_toolButtonSettings_2_clicked was successfully called.";
+
+    emit showSettings();
 }
