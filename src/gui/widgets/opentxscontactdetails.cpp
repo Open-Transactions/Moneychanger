@@ -79,7 +79,7 @@ MTOpentxsContactDetails::~MTOpentxsContactDetails()
 //virtual
 int MTOpentxsContactDetails::GetCustomTabCount()
 {
-    return (Moneychanger::It()->expertMode()) ? 4 : 2;
+    return 2;
 }
 // ----------------------------------
 //virtual
@@ -88,52 +88,65 @@ QWidget * MTOpentxsContactDetails::CreateCustomTab(int nTab)
     const int nCustomTabCount = this->GetCustomTabCount();
     // -----------------------------
     if ((nTab < 0) || (nTab >= nCustomTabCount))
-        return NULL; // out of bounds.
+        return nullptr; // out of bounds.
     // -----------------------------
-    QWidget * pReturnValue = NULL;
+    QWidget * pReturnValue = nullptr;
     // -----------------------------
     switch (nTab)
     {
-    case 0: // "Notes" tab
+//    case 0: // "Notes" tab
+//        if (m_pOwner)
+//        {
+////            if (m_pPlainTextEditNotes)
+////            {
+////                m_pPlainTextEditNotes->setParent(nullptr);
+////                m_pPlainTextEditNotes->disconnect();
+////                m_pPlainTextEditNotes->deleteLater();
+
+////                m_pPlainTextEditNotes = nullptr;
+////            }
+////            m_pPlainTextEditNotes = new QPlainTextEdit;
+
+////            m_pPlainTextEditNotes->setReadOnly(false);
+////            m_pPlainTextEditNotes->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+//            // -------------------------------
+//            QVBoxLayout * pvBox = new QVBoxLayout;
+
+////          QLabel * pLabelContents = new QLabel(tr("Profile (text dump):"));
+
+//            pvBox->setAlignment(Qt::AlignTop);
+////          pvBox->addWidget   (pLabelContents);
+////          pvBox->addWidget   (m_pPlainTextEditNotes);
+//            // -------------------------------
+//            pReturnValue = new QWidget;
+//            pReturnValue->setContentsMargins(0, 0, 0, 0);
+//            pReturnValue->setLayout(pvBox);
+//        }
+//        break;
+
+    case 0: // "Profile" tab
         if (m_pOwner)
         {
             if (m_pPlainTextEditNotes)
             {
-                m_pPlainTextEditNotes->setParent(NULL);
+                m_pPlainTextEditNotes->setParent(nullptr);
                 m_pPlainTextEditNotes->disconnect();
                 m_pPlainTextEditNotes->deleteLater();
 
-                m_pPlainTextEditNotes = NULL;
+                m_pPlainTextEditNotes = nullptr;
             }
             m_pPlainTextEditNotes = new QPlainTextEdit;
 
             m_pPlainTextEditNotes->setReadOnly(false);
             m_pPlainTextEditNotes->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
-            // -------------------------------
-            QVBoxLayout * pvBox = new QVBoxLayout;
 
-            QLabel * pLabelContents = new QLabel(tr("Notes (these don't save yet):"));
-
-            pvBox->setAlignment(Qt::AlignTop);
-            pvBox->addWidget   (pLabelContents);
-            pvBox->addWidget   (m_pPlainTextEditNotes);
-            // -------------------------------
-            pReturnValue = new QWidget;
-            pReturnValue->setContentsMargins(0, 0, 0, 0);
-            pReturnValue->setLayout(pvBox);
-        }
-        break;
-
-    case 1: // "Profile" tab
-        if (m_pOwner)
-        {
             if (treeWidgetClaims_)
             {
-                treeWidgetClaims_->setParent(NULL);
+                treeWidgetClaims_->setParent(nullptr);
                 treeWidgetClaims_->disconnect();
                 treeWidgetClaims_->deleteLater();
 
-                treeWidgetClaims_ = NULL;
+                treeWidgetClaims_ = nullptr;
             }
             treeWidgetClaims_ = new QTreeWidget;
 
@@ -154,11 +167,13 @@ QWidget * MTOpentxsContactDetails::CreateCustomTab(int nTab)
             // -------------------------------
             QVBoxLayout * pvBox = new QVBoxLayout;
 
-            QLabel * pLabel = new QLabel( QString("%1:").arg(tr("Profile")) );
-
             pvBox->setAlignment(Qt::AlignTop);
-            pvBox->addWidget   (pLabel);
-            pvBox->addWidget   (treeWidgetClaims_);
+            QLabel * pLabelContents = new QLabel(tr("Profile (text dump):"));
+            pvBox->addWidget   (pLabelContents);
+            pvBox->addWidget   (m_pPlainTextEditNotes);
+//          QLabel * pLabel = new QLabel( QString("%1:").arg(tr("Profile")) );
+//          pvBox->addWidget   (pLabel);
+//          pvBox->addWidget   (treeWidgetClaims_);
             // -------------------------------
             pReturnValue = new QWidget;
             pReturnValue->setContentsMargins(0, 0, 0, 0);
@@ -172,55 +187,55 @@ QWidget * MTOpentxsContactDetails::CreateCustomTab(int nTab)
         }
         break;
 
-    case 2: // "Credentials" tab
+    case 1: // "Credentials" tab
         if (m_pOwner)
         {
             if (m_pCredentials)
             {
-                m_pCredentials->setParent(NULL);
+                m_pCredentials->setParent(nullptr);
                 m_pCredentials->disconnect();
                 m_pCredentials->deleteLater();
 
-                m_pCredentials = NULL;
+                m_pCredentials = nullptr;
             }
-            m_pCredentials = new MTCredentials(NULL, *m_pOwner);
+            m_pCredentials = new MTCredentials(nullptr, *m_pOwner);
             pReturnValue = m_pCredentials;
             pReturnValue->setContentsMargins(0, 0, 0, 0);
         }
         break;
 
-    case 3: // "Known IDs" tab
-    {
-        if (m_pPlainTextEdit)
-        {
-            m_pPlainTextEdit->setParent(NULL);
-            m_pPlainTextEdit->disconnect();
-            m_pPlainTextEdit->deleteLater();
+//    case 3: // "Known IDs" tab
+//    {
+//        if (m_pPlainTextEdit)
+//        {
+//            m_pPlainTextEdit->setParent(nullptr);
+//            m_pPlainTextEdit->disconnect();
+//            m_pPlainTextEdit->deleteLater();
 
-            m_pPlainTextEdit = NULL;
-        }
-        m_pPlainTextEdit = new QPlainTextEdit;
+//            m_pPlainTextEdit = nullptr;
+//        }
+//        m_pPlainTextEdit = new QPlainTextEdit;
 
-        m_pPlainTextEdit->setReadOnly(true);
-        m_pPlainTextEdit->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
-        // -------------------------------
-        QVBoxLayout * pvBox = new QVBoxLayout;
+//        m_pPlainTextEdit->setReadOnly(true);
+//        m_pPlainTextEdit->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+//        // -------------------------------
+//        QVBoxLayout * pvBox = new QVBoxLayout;
 
-        QLabel * pLabelContents = new QLabel(tr("Known IDs:"));
+//        QLabel * pLabelContents = new QLabel(tr("Known IDs:"));
 
-        pvBox->setAlignment(Qt::AlignTop);
-        pvBox->addWidget   (pLabelContents);
-        pvBox->addWidget   (m_pPlainTextEdit);
-        // -------------------------------
-        pReturnValue = new QWidget;
-        pReturnValue->setContentsMargins(0, 0, 0, 0);
-        pReturnValue->setLayout(pvBox);
-    }
-        break;
+//        pvBox->setAlignment(Qt::AlignTop);
+//        pvBox->addWidget   (pLabelContents);
+//        pvBox->addWidget   (m_pPlainTextEdit);
+//        // -------------------------------
+//        pReturnValue = new QWidget;
+//        pReturnValue->setContentsMargins(0, 0, 0, 0);
+//        pReturnValue->setLayout(pvBox);
+//    }
+//        break;
 
     default:
         qDebug() << QString("Unexpected: MTOpentxsContactDetails::CreateCustomTab was called with bad index: %1").arg(nTab);
-        return NULL;
+        return nullptr;
     }
     // -----------------------------
     return pReturnValue;
@@ -238,10 +253,10 @@ QString  MTOpentxsContactDetails::GetCustomTabName(int nTab)
     // -----------------------------
     switch (nTab)
     {
-    case 0:  qstrReturnValue = "Notes";        break;
-    case 1:  qstrReturnValue = "Profile";      break;
-    case 2:  qstrReturnValue = "Credentials";  break;
-    case 3:  qstrReturnValue = "Known IDs";    break;
+//  case 0:  qstrReturnValue = "Notes";        break;
+    case 0:  qstrReturnValue = "Profile";      break;
+    case 1:  qstrReturnValue = "Credentials";  break;
+//  case 2:  qstrReturnValue = "Known IDs";    break;
 
     default:
         qDebug() << QString("Unexpected: MTOpentxsContactDetails::GetCustomTabName was called with bad index: %1").arg(nTab);
@@ -492,7 +507,7 @@ void MTOpentxsContactDetails::on_treeWidget_customContextMenuRequested(const QPo
     {
         QTreeWidgetItem * pItem = treeWidgetClaims_->itemAt(pos);
 
-        if (NULL != pItem)
+        if (nullptr != pItem)
         {
 //          const int nRow = pItem->row();
 //          if (nRow >= 0)
@@ -1186,7 +1201,7 @@ void MTOpentxsContactDetails::onClaimsUpdatedForNym(QString nymId)
 
 void MTOpentxsContactDetails::RefreshTree(QString qstrContactId, QStringList & qstrlistNymIDs)
 {
-    if (!treeWidgetClaims_ || (NULL == ui))
+    if (!treeWidgetClaims_ || (nullptr == ui))
         return;
     // ----------------------------------------
     ClearTree();
@@ -1196,311 +1211,522 @@ void MTOpentxsContactDetails::RefreshTree(QString qstrContactId, QStringList & q
     // ----------------------------------------
     treeWidgetClaims_->blockSignals(true);
     // ----------------------------------------
-    // Before commencing with the main act, let's iterate all the Nyms once,
-    // and construct a map, so we don't end up doing this multiple times below
-    // unnecessarily.
-    //
-    typedef std::pair<std::string, opentxs::ClaimSet> NymClaims;
-    typedef std::map <std::string, opentxs::ClaimSet> mapOfNymClaims;
-    typedef std::map <std::string, std::string> mapOfNymNames;
+//    // Before commencing with the main act, let's iterate all the Nyms once,
+//    // and construct a map, so we don't end up doing this multiple times below
+//    // unnecessarily.
+//    //
+//    typedef std::pair<std::string, opentxs::ClaimSet> NymClaims;
+//    typedef std::map <std::string, opentxs::ClaimSet> mapOfNymClaims;
+//    typedef std::map <std::string, std::string> mapOfNymNames;
 
-//  mapOfNymClaims nym_claims; // Each pair in this map has a NymID and a ClaimSet.
-    mapOfNymNames  nym_names;  // Each pair in this map has a NymID and a Nym Name.
+////  mapOfNymClaims nym_claims; // Each pair in this map has a NymID and a ClaimSet.
+//    mapOfNymNames  nym_names;  // Each pair in this map has a NymID and a Nym Name.
 
-    bool bANymWasChecked = false;
+//    bool bANymWasChecked = false;
 
-    for (int ii = 0; ii < qstrlistNymIDs.size(); ++ii)
-    {
-        QString qstrNymID = qstrlistNymIDs.at(ii);
-        // ---------------------------------------
-        if (qstrNymID.isEmpty()) // should never happen.
-            continue;
-        // ---------------------------------------
-        const std::string str_nym_id   = qstrNymID.toStdString();
-        const std::string str_nym_name = Moneychanger::It()->OT().Exec().GetNym_Name(str_nym_id);
-        const auto id_nym = opentxs::Identifier::Factory(str_nym_id);
+//    for (int ii = 0; ii < qstrlistNymIDs.size(); ++ii)
+//    {
+//        QString qstrNymID = qstrlistNymIDs.at(ii);
+//        // ---------------------------------------
+//        if (qstrNymID.isEmpty()) // should never happen.
+//            continue;
+//        // ---------------------------------------
+//        const std::string str_nym_id   = qstrNymID.toStdString();
+//        const std::string str_nym_name = Moneychanger::It()->OT().Exec().GetNym_Name(str_nym_id);
+//        const auto id_nym = opentxs::Identifier::Factory(str_nym_id);
 
-        if (!str_nym_id.empty())
-        {
-            auto pCurrentNym = Moneychanger::It()->OT().Wallet().Nym(id_nym);
-//          const opentxs::Nym * pCurrentNym =
-//                Moneychanger::It()->OT().OTAPI().GetOrLoadNym(id_nym);
+//        if (!str_nym_id.empty())
+//        {
+//            auto pCurrentNym = Moneychanger::It()->OT().Wallet().Nym(id_nym);
+////          const opentxs::Nym * pCurrentNym =
+////                Moneychanger::It()->OT().OTAPI().GetOrLoadNym(id_nym);
 
-            // check_nym if not already downloaded.
-            if (!pCurrentNym)
-            {
-                const QString qstrDefaultNotaryId = Moneychanger::It()->getDefaultNotaryID();
-                const QString qstrDefaultNymId    = Moneychanger::It()->getDefaultNymID();
+//            // check_nym if not already downloaded.
+//            if (!pCurrentNym)
+//            {
+//                const QString qstrDefaultNotaryId = Moneychanger::It()->getDefaultNotaryID();
+//                const QString qstrDefaultNymId    = Moneychanger::It()->getDefaultNymID();
 
-                if (!qstrDefaultNotaryId.isEmpty() && !qstrDefaultNymId.isEmpty())
-                {
-                    const std::string my_nym_id = qstrDefaultNymId   .toStdString();
-                    const std::string notary_id = qstrDefaultNotaryId.toStdString();
-
-
-                    std::string response;
-                    {
-                        MTSpinner theSpinner;
-
-                        auto action = Moneychanger::It()->OT().ServerAction().DownloadNym(
-                                opentxs::Identifier::Factory(my_nym_id),
-                                opentxs::Identifier::Factory(notary_id),
-                                opentxs::Identifier::Factory(str_nym_id));
-                        response = action->Run();
-                    }
-
-                    int32_t nReturnVal = opentxs::VerifyMessageSuccess(response);
-
-                    if (1 == nReturnVal)
-                    {
-                        pCurrentNym = Moneychanger::It()->OT().Wallet().Nym(id_nym);
-//                      pCurrentNym = Moneychanger::It()->OT().OTAPI().reloadAndGetNym(id_nym);
-                        bANymWasChecked = true;
-                        emit nymWasJustChecked(qstrNymID);
-                    }
-                }
-            }
-
-            if (pCurrentNym && !bANymWasChecked)
-            {
-                nym_names.insert(std::pair<std::string, std::string>(str_nym_id, str_nym_name));
-            }
-        }
-        // ---------------------------------------------
-        // Since we're already looping here through all the Nyms known for this
-        // contact, let's go ahead and grab all claims from anyone else, that they
-        // "have met" that Nym, so later we can display those on the tree in the
-        // appropriate place.
+//                if (!qstrDefaultNotaryId.isEmpty() && !qstrDefaultNymId.isEmpty())
+//                {
+//                    const std::string my_nym_id = qstrDefaultNymId   .toStdString();
+//                    const std::string notary_id = qstrDefaultNotaryId.toStdString();
 
 
-        // TODO
+//                    std::string response;
+//                    {
+//                        MTSpinner theSpinner;
+
+//                        auto action = Moneychanger::It()->OT().ServerAction().DownloadNym(
+//                                opentxs::Identifier::Factory(my_nym_id),
+//                                opentxs::Identifier::Factory(notary_id),
+//                                opentxs::Identifier::Factory(str_nym_id));
+//                        response = action->Run();
+//                    }
+
+//                    int32_t nReturnVal = opentxs::VerifyMessageSuccess(response);
+
+//                    if (1 == nReturnVal)
+//                    {
+//                        pCurrentNym = Moneychanger::It()->OT().Wallet().Nym(id_nym);
+////                      pCurrentNym = Moneychanger::It()->OT().OTAPI().reloadAndGetNym(id_nym);
+//                        bANymWasChecked = true;
+//                        emit nymWasJustChecked(qstrNymID);
+//                    }
+//                }
+//            }
+
+//            if (pCurrentNym && !bANymWasChecked)
+//            {
+//                nym_names.insert(std::pair<std::string, std::string>(str_nym_id, str_nym_name));
+//            }
+//        }
+//        // ---------------------------------------------
+//        // Since we're already looping here through all the Nyms known for this
+//        // contact, let's go ahead and grab all claims from anyone else, that they
+//        // "have met" that Nym, so later we can display those on the tree in the
+//        // appropriate place.
+
+
+//        // TODO
 
 
 
-    }
-    // -------------------------------------------------
-    // NOTE: If a nymWasChecked, that means we emitted a signal which the Moneychanger singleton
-    // received. That caused it to to upsert any claims from that Nym into the Moneychanger DB,
-    // in the claim table.
-    //
-    // In that same function, Moneychanger then announces by emitting its own signal, that claims
-    // were just updated in the database. And that ends up causing the detail edit to refresh itself,
-    // which ends up calling RefreshTree() again (the function we're in right now.)
-    //
-    // So that's why it's okay for us to return here, since we know this function is just going to
-    // get called again anyway, and there will be better data available when it does (because by
-    // then, it'll have upserted the claims already.)
-    //
-    if (bANymWasChecked)
-        return;
-    // -------------------------------------------------
-    // This means NONE of the contact's Nyms had any claims.
-    // (So there's nothing to put on this tree. Done.)
-//    if (nym_claims.empty())
+//    }
+//    // -------------------------------------------------
+//    // NOTE: If a nymWasChecked, that means we emitted a signal which the Moneychanger singleton
+//    // received. That caused it to to upsert any claims from that Nym into the Moneychanger DB,
+//    // in the claim table.
+//    //
+//    // In that same function, Moneychanger then announces by emitting its own signal, that claims
+//    // were just updated in the database. And that ends up causing the detail edit to refresh itself,
+//    // which ends up calling RefreshTree() again (the function we're in right now.)
+//    //
+//    // So that's why it's okay for us to return here, since we know this function is just going to
+//    // get called again anyway, and there will be better data available when it does (because by
+//    // then, it'll have upserted the claims already.)
+//    //
+//    if (bANymWasChecked)
 //        return;
-    // UPDATE: Even if Bob has no claims, ALICE might have made a relationship claim ABOUT
-    // Bob, which would be displayed here (giving Bob the opportunity to confirm/refute.)
-    // (So we can't just return here.)
-    // -------------------------------------------------
-//  QPointer<ModelClaims>      pModelClaims_;
-//  QPointer<ClaimsProxyModel> pProxyModelClaims_;
+//    // -------------------------------------------------
+//    // This means NONE of the contact's Nyms had any claims.
+//    // (So there's nothing to put on this tree. Done.)
+////    if (nym_claims.empty())
+////        return;
+//    // UPDATE: Even if Bob has no claims, ALICE might have made a relationship claim ABOUT
+//    // Bob, which would be displayed here (giving Bob the opportunity to confirm/refute.)
+//    // (So we can't just return here.)
+//    // -------------------------------------------------
+////  QPointer<ModelClaims>      pModelClaims_;
+////  QPointer<ClaimsProxyModel> pProxyModelClaims_;
 
-    pProxyModelClaims_ = nullptr;
+//    pProxyModelClaims_ = nullptr;
 
-    pModelClaims_=nullptr; // TODO
-    //pModelClaims_ = DBHandler::getInstance()->getClaimsModel(nContactId);
+//    pModelClaims_=nullptr; // TODO
+//    //pModelClaims_ = DBHandler::getInstance()->getClaimsModel(nContactId);
 
-    if (!pModelClaims_)
-        return;
+//    if (!pModelClaims_)
+//        return;
 
-    pProxyModelClaims_ = new ClaimsProxyModel;
-    pProxyModelClaims_->setSourceModel(pModelClaims_);
-    // -------------------------------------------------
-    // We make a button group for each combination of Nym, Section, and Type.
-    // Therefore I make a map with a KEY of: tuple<Nym, Section, Type>
-    // The VALUE will be pointers to QButtonGroup.
-    //
-//    const std::string claim_nym_id  = qvarNymId  .isValid() ? qvarNymId.toString().toStdString() : "";
-//    const uint32_t    claim_section = qvarSection.isValid() ? qvarSection.toUInt() : 0;
-//    const uint32_t    claim_type    = qvarType   .isValid() ? qvarType.toUInt() : 0;
+//    pProxyModelClaims_ = new ClaimsProxyModel;
+//    pProxyModelClaims_->setSourceModel(pModelClaims_);
+//    // -------------------------------------------------
+//    // We make a button group for each combination of Nym, Section, and Type.
+//    // Therefore I make a map with a KEY of: tuple<Nym, Section, Type>
+//    // The VALUE will be pointers to QButtonGroup.
+//    //
+////    const std::string claim_nym_id  = qvarNymId  .isValid() ? qvarNymId.toString().toStdString() : "";
+////    const uint32_t    claim_section = qvarSection.isValid() ? qvarSection.toUInt() : 0;
+////    const uint32_t    claim_type    = qvarType   .isValid() ? qvarType.toUInt() : 0;
 
-    typedef std::tuple<std::string, uint32_t, uint32_t> ButtonGroupKey;
-    typedef std::map<ButtonGroupKey, QButtonGroup *> mapOfButtonGroups;
+//    typedef std::tuple<std::string, uint32_t, uint32_t> ButtonGroupKey;
+//    typedef std::map<ButtonGroupKey, QButtonGroup *> mapOfButtonGroups;
 
-    mapOfButtonGroups mapButtonGroups;
-    // -------------------------------------------------
+//    mapOfButtonGroups mapButtonGroups;
+//    // -------------------------------------------------
 
-//    justusranvier
-//    6:45 ok
-//    6:46 well, when I update opentxs-proto to include the appropriate sections and types, you'll have a Relationships section
-//    6:46 and there will be an item type called "met"
-//    6:46 if you want to make this claim programmatically
-//    6:47 set the indexSection to proto::CONTACTSECTION_RELATIONSHIPS
-//    6:47 set the indexSectionType to CITEMTYPE_MET
-//    6:47 and set the nymid of the person you met to textValue
-//    6:47 (based on that code sample)
-//    6:47 .
-//    6:48 actually both of those enums should be in the opentxs::proto:: namespace
+////    justusranvier
+////    6:45 ok
+////    6:46 well, when I update opentxs-proto to include the appropriate sections and types, you'll have a Relationships section
+////    6:46 and there will be an item type called "met"
+////    6:46 if you want to make this claim programmatically
+////    6:47 set the indexSection to proto::CONTACTSECTION_RELATIONSHIPS
+////    6:47 set the indexSectionType to CITEMTYPE_MET
+////    6:47 and set the nymid of the person you met to textValue
+////    6:47 (based on that code sample)
+////    6:47 .
+////    6:48 actually both of those enums should be in the opentxs::proto:: namespace
 
-    // Insert "Has Met" into Tree.
-    //
-    QString  qstrMetLabel = QString("<b>%1</b>").arg(tr("Relationship claims"));
-    QLabel * label = new QLabel(qstrMetLabel, treeWidgetClaims_);
+//    // Insert "Has Met" into Tree.
+//    //
+//    QString  qstrMetLabel = QString("<b>%1</b>").arg(tr("Relationship claims"));
+//    QLabel * label = new QLabel(qstrMetLabel, treeWidgetClaims_);
 
-    metInPerson_ = new QTreeWidgetItem;
+//    metInPerson_ = new QTreeWidgetItem;
 
-//  metInPerson_->setText(0, "Met in person");
-    treeWidgetClaims_->addTopLevelItem(metInPerson_);
-    treeWidgetClaims_->expandItem(metInPerson_);
-    treeWidgetClaims_->setItemWidget(metInPerson_, 0, label);
-    // ------------------------------------------
-    // Earlier above, we made a list of all the claims from other Nyms
-    // that they "have met" the Nyms represented by this Contact.
-    // Now let's add those here as sub-items under the metInPerson_ top-level item.
-    //
-    QPointer<ModelClaims> pRelationships;// TODO
-    //QPointer<ModelClaims> pRelationships = DBHandler::getInstance()->getRelationshipClaims(nContactId);
+////  metInPerson_->setText(0, "Met in person");
+//    treeWidgetClaims_->addTopLevelItem(metInPerson_);
+//    treeWidgetClaims_->expandItem(metInPerson_);
+//    treeWidgetClaims_->setItemWidget(metInPerson_, 0, label);
+//    // ------------------------------------------
+//    // Earlier above, we made a list of all the claims from other Nyms
+//    // that they "have met" the Nyms represented by this Contact.
+//    // Now let's add those here as sub-items under the metInPerson_ top-level item.
+//    //
+//    QPointer<ModelClaims> pRelationships;// TODO
+//    //QPointer<ModelClaims> pRelationships = DBHandler::getInstance()->getRelationshipClaims(nContactId);
 
-    if (!pRelationships) // Should never happen, even if the result set is empty.
-        return;
+//    if (!pRelationships) // Should never happen, even if the result set is empty.
+//        return;
 
-    QPointer<ClaimsProxyModel> pProxyModelRelationships = new ClaimsProxyModel;
+//    QPointer<ClaimsProxyModel> pProxyModelRelationships = new ClaimsProxyModel;
 
-    pProxyModelRelationships->setSourceModel(pRelationships);
+//    pProxyModelRelationships->setSourceModel(pRelationships);
 
-    if (pRelationships->rowCount() > 0)
-    {
-        // First grab the various relationship type names:  (Parent of, have met, child of, etc.)
-        QMap<uint32_t, QString> mapTypeNames;
-        // ----------------------------------------
-        const std::string sectionName =
-            Moneychanger::It()->OT().Exec().ContactSectionName(
-                opentxs::proto::CONTACTSECTION_RELATIONSHIP);
-        const auto sectionTypes =
-            Moneychanger::It()->OT().Exec().ContactSectionTypeList(
-                opentxs::proto::CONTACTSECTION_RELATIONSHIP);
+//    if (pRelationships->rowCount() > 0)
+//    {
+//        // First grab the various relationship type names:  (Parent of, have met, child of, etc.)
+//        QMap<uint32_t, QString> mapTypeNames;
+//        // ----------------------------------------
+//        const std::string sectionName =
+//            Moneychanger::It()->OT().Exec().ContactSectionName(
+//                opentxs::proto::CONTACTSECTION_RELATIONSHIP);
+//        const auto sectionTypes =
+//            Moneychanger::It()->OT().Exec().ContactSectionTypeList(
+//                opentxs::proto::CONTACTSECTION_RELATIONSHIP);
 
-        for (const auto& indexSectionType: sectionTypes) {
-            const std::string typeName =
-                Moneychanger::It()->OT().Exec().ContactTypeName(indexSectionType);
-            mapTypeNames.insert(
-                indexSectionType,
-                QString::fromStdString(typeName));
-        }
-        // ---------------------------------------
+//        for (const auto& indexSectionType: sectionTypes) {
+//            const std::string typeName =
+//                Moneychanger::It()->OT().Exec().ContactTypeName(indexSectionType);
+//            mapTypeNames.insert(
+//                indexSectionType,
+//                QString::fromStdString(typeName));
+//        }
+//        // ---------------------------------------
 
-        for (int nRelationshipCount = 0; nRelationshipCount < pProxyModelRelationships->rowCount(); nRelationshipCount++)
-        {
-//          QSqlRecord record = pRelationships->record(nRelationshipCount);
+//        for (int nRelationshipCount = 0; nRelationshipCount < pProxyModelRelationships->rowCount(); nRelationshipCount++)
+//        {
+////          QSqlRecord record = pRelationships->record(nRelationshipCount);
 
-            QModelIndex proxyIndexZero        = pProxyModelRelationships->index(nRelationshipCount, 0);
-            QModelIndex sourceIndexZero       = pProxyModelRelationships->mapToSource(proxyIndexZero);
-            // ----------------------------------------------------------------------------
-            QModelIndex sourceIndexClaimId    = pRelationships->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_CLAIM_ID,    sourceIndexZero);
-            QModelIndex sourceIndexNymId      = pRelationships->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_NYM_ID,      sourceIndexZero);
-            QModelIndex sourceIndexSection    = pRelationships->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_SECTION,     sourceIndexZero);
-            QModelIndex sourceIndexType       = pRelationships->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_TYPE,        sourceIndexZero);
-            QModelIndex sourceIndexValue      = pRelationships->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_VALUE,       sourceIndexZero);
-            QModelIndex sourceIndexStart      = pRelationships->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_START,       sourceIndexZero);
-            QModelIndex sourceIndexEnd        = pRelationships->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_END,         sourceIndexZero);
-            QModelIndex sourceIndexAttributes = pRelationships->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_ATTRIBUTES,  sourceIndexZero);
-            QModelIndex sourceIndexAttActive  = pRelationships->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_ATT_ACTIVE,  sourceIndexZero);
-            QModelIndex sourceIndexAttPrimary = pRelationships->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_ATT_PRIMARY, sourceIndexZero);
-            // ----------------------------------------------------------------------------
-            QModelIndex proxyIndexValue       = pProxyModelRelationships->mapFromSource(sourceIndexValue);
-            QModelIndex proxyIndexStart       = pProxyModelRelationships->mapFromSource(sourceIndexStart);
-            QModelIndex proxyIndexEnd         = pProxyModelRelationships->mapFromSource(sourceIndexEnd);
-            // ----------------------------------------------------------------------------
-            QVariant    qvarClaimId           = pRelationships->data(sourceIndexClaimId);
-            QVariant    qvarNymId             = pRelationships->data(sourceIndexNymId);
-            QVariant    qvarSection           = pRelationships->data(sourceIndexSection);
-            QVariant    qvarType              = pRelationships->data(sourceIndexType);
-            QVariant    qvarValue             = pProxyModelRelationships->data(proxyIndexValue); // Proxy here since the proxy model decodes this. UPDATE: no longer encoded.
-            QVariant    qvarStart             = pProxyModelRelationships->data(proxyIndexStart); // Proxy for these two since it formats the
-            QVariant    qvarEnd               = pProxyModelRelationships->data(proxyIndexEnd);   // timestamp as a human-readable string.
-            QVariant    qvarAttributes        = pRelationships->data(sourceIndexAttributes);
-            QVariant    qvarAttActive         = pRelationships->data(sourceIndexAttActive);
-            QVariant    qvarAttPrimary        = pRelationships->data(sourceIndexAttPrimary);
-            // ----------------------------------------------------------------------------
-            const QString qstrClaimId       = qvarClaimId.isValid() ? qvarClaimId.toString() : "";
-            const QString qstrClaimValue    = qvarValue  .isValid() ? qvarValue  .toString() : "";
-            // ----------------------------------------------------------------------------
-            const std::string claim_id      = qstrClaimId   .isEmpty() ? "" : qstrClaimId.toStdString();
-            const std::string claim_value   = qstrClaimValue.isEmpty() ? "" : qstrClaimValue.toStdString();
-            const std::string claim_nym_id  = qvarNymId     .isValid() ? qvarNymId.toString().toStdString() : "";
-            const uint32_t    claim_section = qvarSection   .isValid() ? qvarSection.toUInt() : 0;
-            const uint32_t    claim_type    = qvarType      .isValid() ? qvarType.toUInt() : 0;
-            // ----------------------------------------------------------------------------
-            const bool        claim_active  = qvarAttActive .isValid() ? qvarAttActive .toBool() : false;
-            const bool        claim_primary = qvarAttPrimary.isValid() ? qvarAttPrimary.toBool() : false;
-            // ----------------------------------------------------------------------------
-            QMap<uint32_t, QString>::iterator it_typeNames = mapTypeNames.find(claim_type);
-            QString qstrTypeName;
+//            QModelIndex proxyIndexZero        = pProxyModelRelationships->index(nRelationshipCount, 0);
+//            QModelIndex sourceIndexZero       = pProxyModelRelationships->mapToSource(proxyIndexZero);
+//            // ----------------------------------------------------------------------------
+//            QModelIndex sourceIndexClaimId    = pRelationships->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_CLAIM_ID,    sourceIndexZero);
+//            QModelIndex sourceIndexNymId      = pRelationships->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_NYM_ID,      sourceIndexZero);
+//            QModelIndex sourceIndexSection    = pRelationships->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_SECTION,     sourceIndexZero);
+//            QModelIndex sourceIndexType       = pRelationships->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_TYPE,        sourceIndexZero);
+//            QModelIndex sourceIndexValue      = pRelationships->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_VALUE,       sourceIndexZero);
+//            QModelIndex sourceIndexStart      = pRelationships->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_START,       sourceIndexZero);
+//            QModelIndex sourceIndexEnd        = pRelationships->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_END,         sourceIndexZero);
+//            QModelIndex sourceIndexAttributes = pRelationships->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_ATTRIBUTES,  sourceIndexZero);
+//            QModelIndex sourceIndexAttActive  = pRelationships->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_ATT_ACTIVE,  sourceIndexZero);
+//            QModelIndex sourceIndexAttPrimary = pRelationships->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_ATT_PRIMARY, sourceIndexZero);
+//            // ----------------------------------------------------------------------------
+//            QModelIndex proxyIndexValue       = pProxyModelRelationships->mapFromSource(sourceIndexValue);
+//            QModelIndex proxyIndexStart       = pProxyModelRelationships->mapFromSource(sourceIndexStart);
+//            QModelIndex proxyIndexEnd         = pProxyModelRelationships->mapFromSource(sourceIndexEnd);
+//            // ----------------------------------------------------------------------------
+//            QVariant    qvarClaimId           = pRelationships->data(sourceIndexClaimId);
+//            QVariant    qvarNymId             = pRelationships->data(sourceIndexNymId);
+//            QVariant    qvarSection           = pRelationships->data(sourceIndexSection);
+//            QVariant    qvarType              = pRelationships->data(sourceIndexType);
+//            QVariant    qvarValue             = pProxyModelRelationships->data(proxyIndexValue); // Proxy here since the proxy model decodes this. UPDATE: no longer encoded.
+//            QVariant    qvarStart             = pProxyModelRelationships->data(proxyIndexStart); // Proxy for these two since it formats the
+//            QVariant    qvarEnd               = pProxyModelRelationships->data(proxyIndexEnd);   // timestamp as a human-readable string.
+//            QVariant    qvarAttributes        = pRelationships->data(sourceIndexAttributes);
+//            QVariant    qvarAttActive         = pRelationships->data(sourceIndexAttActive);
+//            QVariant    qvarAttPrimary        = pRelationships->data(sourceIndexAttPrimary);
+//            // ----------------------------------------------------------------------------
+//            const QString qstrClaimId       = qvarClaimId.isValid() ? qvarClaimId.toString() : "";
+//            const QString qstrClaimValue    = qvarValue  .isValid() ? qvarValue  .toString() : "";
+//            // ----------------------------------------------------------------------------
+//            const std::string claim_id      = qstrClaimId   .isEmpty() ? "" : qstrClaimId.toStdString();
+//            const std::string claim_value   = qstrClaimValue.isEmpty() ? "" : qstrClaimValue.toStdString();
+//            const std::string claim_nym_id  = qvarNymId     .isValid() ? qvarNymId.toString().toStdString() : "";
+//            const uint32_t    claim_section = qvarSection   .isValid() ? qvarSection.toUInt() : 0;
+//            const uint32_t    claim_type    = qvarType      .isValid() ? qvarType.toUInt() : 0;
+//            // ----------------------------------------------------------------------------
+//            const bool        claim_active  = qvarAttActive .isValid() ? qvarAttActive .toBool() : false;
+//            const bool        claim_primary = qvarAttPrimary.isValid() ? qvarAttPrimary.toBool() : false;
+//            // ----------------------------------------------------------------------------
+//            QMap<uint32_t, QString>::iterator it_typeNames = mapTypeNames.find(claim_type);
+//            QString qstrTypeName;
 
-            if (it_typeNames != mapTypeNames.end())
-                qstrTypeName = it_typeNames.value();
-            // ---------------------------------------
-            const std::string str_claimant_name = Moneychanger::It()->OT().Exec().GetNym_Name(claim_nym_id);
+//            if (it_typeNames != mapTypeNames.end())
+//                qstrTypeName = it_typeNames.value();
+//            // ---------------------------------------
+//            const std::string str_claimant_name = Moneychanger::It()->OT().Exec().GetNym_Name(claim_nym_id);
 
-            // Add the claim to the tree.
-            //
-            QTreeWidgetItem * claim_item = new QTreeWidgetItem;
-            // ---------------------------------------
+//            // Add the claim to the tree.
+//            //
+//            QTreeWidgetItem * claim_item = new QTreeWidgetItem;
+//            // ---------------------------------------
 
-            // ALICE claims she HAS MET *CHARLIE*.
+//            // ALICE claims she HAS MET *CHARLIE*.
 
-            // str_claimant_name claims she qstrTypeName nym_names[claim_value]
+//            // str_claimant_name claims she qstrTypeName nym_names[claim_value]
 
-            mapOfNymNames::iterator it_names = nym_names.find(claim_value);
-            std::string str_nym_name;
+//            mapOfNymNames::iterator it_names = nym_names.find(claim_value);
+//            std::string str_nym_name;
 
-            if (nym_names.end() != it_names)
-                str_nym_name =  it_names->second;
-            else
-                str_nym_name = claim_value;
+//            if (nym_names.end() != it_names)
+//                str_nym_name =  it_names->second;
+//            else
+//                str_nym_name = claim_value;
 
-            const QString qstrClaimantLabel = QString("%1: %2").arg(tr("Claimant")).arg(QString::fromStdString(str_claimant_name));
+//            const QString qstrClaimantLabel = QString("%1: %2").arg(tr("Claimant")).arg(QString::fromStdString(str_claimant_name));
 
-            claim_item->setText(0, qstrClaimantLabel);      // "Alice" (some lady) from NymId
-            claim_item->setText(1, qstrTypeName);           // "Has met" (or so she claimed)
-            claim_item->setText(2, QString::fromStdString(str_nym_name));  // "Charlie" (one of the Nyms on this Contact.)
+//            claim_item->setText(0, qstrClaimantLabel);      // "Alice" (some lady) from NymId
+//            claim_item->setText(1, qstrTypeName);           // "Has met" (or so she claimed)
+//            claim_item->setText(2, QString::fromStdString(str_nym_name));  // "Charlie" (one of the Nyms on this Contact.)
 
-            claim_item->setData(0, Qt::UserRole+1, TREE_ITEM_TYPE_RELATIONSHIP);
+//            claim_item->setData(0, Qt::UserRole+1, TREE_ITEM_TYPE_RELATIONSHIP);
 
-            claim_item->setData(0, Qt::UserRole, qstrClaimId);
-            claim_item->setData(2, Qt::UserRole, QString::fromStdString(claim_nym_id)); // For now this is Alice's Nym Id. Not sure how we'll use it.
+//            claim_item->setData(0, Qt::UserRole, qstrClaimId);
+//            claim_item->setData(2, Qt::UserRole, QString::fromStdString(claim_nym_id)); // For now this is Alice's Nym Id. Not sure how we'll use it.
 
-//            claim_item->setData(0, Qt::UserRole, QString::fromStdString(claim_nym_id)); // Alice's Nym Id. The person who made the claim. Claimant Nym Id.
-//            claim_item->setData(1, Qt::UserRole, qstrClaimId);
-//            claim_item->setData(2, Qt::UserRole, QString::fromStdString(claim_value)); // Verifier Nym Id. Alice made a claim about Charlie (this current Contact in the address book), who verifies her claim. So Charlie's ID goes in Alice's claim_value.
-            // ----------------------------------------
-            // Since this is someone else's claim about this contact, I should see if this contact has already confirmed or refuted it.
-            bool bPolarity = false;
-            const bool bGotPolarity = MTContactHandler::getInstance()->getPolarityIfAny(qstrClaimId,
-                                                                                        qstrClaimValue, bPolarity);
+////            claim_item->setData(0, Qt::UserRole, QString::fromStdString(claim_nym_id)); // Alice's Nym Id. The person who made the claim. Claimant Nym Id.
+////            claim_item->setData(1, Qt::UserRole, qstrClaimId);
+////            claim_item->setData(2, Qt::UserRole, QString::fromStdString(claim_value)); // Verifier Nym Id. Alice made a claim about Charlie (this current Contact in the address book), who verifies her claim. So Charlie's ID goes in Alice's claim_value.
+//            // ----------------------------------------
+//            // Since this is someone else's claim about this contact, I should see if this contact has already confirmed or refuted it.
+//            bool bPolarity = false;
+//            const bool bGotPolarity = MTContactHandler::getInstance()->getPolarityIfAny(qstrClaimId,
+//                                                                                        qstrClaimValue, bPolarity);
 
-//            qDebug() << "DEBUGGING CONTACT DETAILS: QString::fromStdString(claim_value): " << QString::fromStdString(claim_value);
-//            qDebug() << "DEBUGGING CONTACT DETAILS: QString::fromStdString(str_nym_id): " << QString::fromStdString(str_nym_id);
+////            qDebug() << "DEBUGGING CONTACT DETAILS: QString::fromStdString(claim_value): " << QString::fromStdString(claim_value);
+////            qDebug() << "DEBUGGING CONTACT DETAILS: QString::fromStdString(str_nym_id): " << QString::fromStdString(str_nym_id);
 
-            if (bGotPolarity)
-            {
-                claim_item->setText(5, bPolarity ? tr("Confirmed") : tr("Refuted") );
-                claim_item->setBackgroundColor(5, bPolarity ? QColor("green") : QColor("red"));
-            }
-            else
-                claim_item->setText(5, tr("No comment"));
-            // ---------------------------------------
-//          claim_item->setFlags(claim_item->flags() |     Qt::ItemIsEditable);
-            claim_item->setFlags(claim_item->flags() & ~ ( Qt::ItemIsEditable | Qt::ItemIsUserCheckable) );
-            // ---------------------------------------
-            metInPerson_->addChild(claim_item);
-            treeWidgetClaims_->expandItem(claim_item);
-            // ----------------------------------------------------------------------------
-            // Couldn't do this until now, when the claim_item has been added to the tree.
-            //
-//          typedef std::tuple<std::string, uint32_t, uint32_t> ButtonGroupKey;
-//          typedef std::map<ButtonGroupKey, QButtonGroup *> mapOfButtonGroups;
-//          mapOfButtonGroups mapButtonGroups;
+//            if (bGotPolarity)
+//            {
+//                claim_item->setText(5, bPolarity ? tr("Confirmed") : tr("Refuted") );
+//                claim_item->setBackgroundColor(5, bPolarity ? QColor("green") : QColor("red"));
+//            }
+//            else
+//                claim_item->setText(5, tr("No comment"));
+//            // ---------------------------------------
+////          claim_item->setFlags(claim_item->flags() |     Qt::ItemIsEditable);
+//            claim_item->setFlags(claim_item->flags() & ~ ( Qt::ItemIsEditable | Qt::ItemIsUserCheckable) );
+//            // ---------------------------------------
+//            metInPerson_->addChild(claim_item);
+//            treeWidgetClaims_->expandItem(claim_item);
+//            // ----------------------------------------------------------------------------
+//            // Couldn't do this until now, when the claim_item has been added to the tree.
+//            //
+////          typedef std::tuple<std::string, uint32_t, uint32_t> ButtonGroupKey;
+////          typedef std::map<ButtonGroupKey, QButtonGroup *> mapOfButtonGroups;
+////          mapOfButtonGroups mapButtonGroups;
+
+////            ButtonGroupKey keyBtnGroup{claim_nym_id, claim_section, claim_type};
+////            mapOfButtonGroups::iterator it_btn_group = mapButtonGroups.find(keyBtnGroup);
+////            QButtonGroup * pButtonGroup = nullptr;
+
+////            if (mapButtonGroups.end() != it_btn_group)
+////                pButtonGroup = it_btn_group->second;
+////            else
+////            {
+////                // The button group doesn't exist yet, for this tuple.
+////                // (So let's create it.)
+////                //
+////                pButtonGroup = new QButtonGroup(treeWidgetClaims_);
+////                mapButtonGroups.insert(std::pair<ButtonGroupKey, QButtonGroup *>(keyBtnGroup, pButtonGroup));
+////            }
+////            { // "Primary"
+////            QRadioButton * pRadioBtn = new QRadioButton(treeWidgetClaims_);
+////            pButtonGroup->addButton(pRadioBtn);
+////            pRadioBtn->setChecked(claim_primary);
+////            pRadioBtn->setEnabled(false);
+////            // ---------
+////            treeWidgetClaims_->setItemWidget(claim_item, 3, pRadioBtn);
+////            }
+////            // ----------------------------------------------------------------------------
+////            { // "Active"
+////            QRadioButton * pRadioBtn = new QRadioButton(treeWidgetClaims_);
+////            pRadioBtn->setChecked(claim_active);
+////            pRadioBtn->setEnabled(false);
+////            // ---------
+////            treeWidgetClaims_->setItemWidget(claim_item, 4, pRadioBtn);
+////            }
+
+//        }
+
+//    } // Relationships
+//    // ------------------------------------------------
+
+
+//    //resume
+
+
+//    //        QString create_claim_table = "CREATE TABLE IF NOT EXISTS claim"
+//    //               "(claim_id TEXT PRIMARY KEY,"
+//    //               " claim_nym_id TEXT,"
+//    //               " claim_section INTEGER,"
+//    //               " claim_type INTEGER,"
+//    //               " claim_value TEXT,"
+//    //               " claim_start INTEGER,"
+//    //               " claim_end INTEGER,"
+//    //               " claim_attributes TEXT,"
+//    //               " claim_att_active INTEGER,"
+//    //               " claim_att_primary INTEGER"
+//    //               ")";
+
+////    // TODO
+
+
+
+////    // ------------------------------------------------
+////    opentxs::proto::ContactData contactData;
+////    contactData.set_version(1); // todo hardcoding.
+
+////    for (auto& it: items) {
+////        auto newSection = contactData.add_section();
+////        newSection->set_version(1);
+////        newSection->set_name(static_cast<opentxs::proto::ContactSectionName>(it.first));
+
+////        for (auto& i: it.second) {
+////            auto newItem = newSection->add_item();
+////            newItem->set_version(1);
+////            newItem->set_type(static_cast<opentxs::proto::ContactItemType>(std::get<0>(i)));
+////            newItem->set_value(std::get<1>(i));
+////            if (std::get<2>(i)) {
+////                newItem->add_attribute(opentxs::proto::CITEMATTR_PRIMARY);
+////            }
+////            newItem->add_attribute(opentxs::proto::CITEMATTR_ACTIVE);
+////        }
+////    }
+////    // ------------------------------------------------
+////    if (!Moneychanger::It()->OT().OTAPI().SetContactData(*pCurrentNym, contactData))
+////        qDebug() << __FUNCTION__ << ": ERROR: Failed trying to Set Contact Data!";
+//////      else
+//////          qDebug() << __FUNCTION__ << "SetContactData SUCCESS. items.size(): " << items.size();
+////    // ------------------------------------------------
+
+
+
+
+//    // ------------------------------------------
+//    // Now we loop through the sections, and for each, we populate its
+//    // itemwidgets by looping through the nym_claims we got above.
+//    //
+//    const auto sections = Moneychanger::It()->OT().Exec().ContactSectionList();
+
+//    for (const auto& indexSection: sections) {
+//        if (opentxs::proto::CONTACTSECTION_RELATIONSHIP == indexSection) {
+//            continue;
+//        }
+//        // ----------------------------------------
+//        QMap<uint32_t, QString> mapTypeNames;
+
+//        const std::string sectionName =
+//            Moneychanger::It()->OT().Exec().ContactSectionName(indexSection);
+//        const auto sectionTypes =
+//            Moneychanger::It()->OT().Exec().ContactSectionTypeList(indexSection);
+
+//        for (const auto& indexSectionType: sectionTypes) {
+//            const std::string typeName =
+//                Moneychanger::It()->OT().Exec().ContactTypeName(indexSectionType);
+//            mapTypeNames.insert(
+//                indexSectionType,
+//                QString::fromStdString(typeName));
+//        }
+//        // ---------------------------------------
+//        // Insert Section into Tree.
+//        //
+//        QTreeWidgetItem * topLevel = new QTreeWidgetItem;
+//        // ------------------------------------------
+//        topLevel->setText(0, QString::fromStdString(sectionName));
+//        // ------------------------------------------
+//        treeWidgetClaims_->addTopLevelItem(topLevel);
+//        treeWidgetClaims_->expandItem(topLevel);
+//        // ------------------------------------------
+
+
+//        // ------------------------------------------
+//        for (int ii = 0; ii < pProxyModelClaims_->rowCount(); ++ii)
+//        {
+//            QModelIndex proxyIndexZero        = pProxyModelClaims_->index(ii, 0);
+//            QModelIndex sourceIndexZero       = pProxyModelClaims_->mapToSource(proxyIndexZero);
+//            // ----------------------------------------------------------------------------
+//            QModelIndex sourceIndexClaimId    = pModelClaims_->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_CLAIM_ID,    sourceIndexZero);
+//            QModelIndex sourceIndexNymId      = pModelClaims_->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_NYM_ID,      sourceIndexZero);
+//            QModelIndex sourceIndexSection    = pModelClaims_->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_SECTION,     sourceIndexZero);
+//            QModelIndex sourceIndexType       = pModelClaims_->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_TYPE,        sourceIndexZero);
+//            QModelIndex sourceIndexValue      = pModelClaims_->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_VALUE,       sourceIndexZero);
+//            QModelIndex sourceIndexClaimStart = pModelClaims_->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_START,       sourceIndexZero);
+//            QModelIndex sourceIndexClaimEnd   = pModelClaims_->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_END,         sourceIndexZero);
+//            QModelIndex sourceIndexAttributes = pModelClaims_->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_ATTRIBUTES,  sourceIndexZero);
+//            QModelIndex sourceIndexAttActive  = pModelClaims_->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_ATT_ACTIVE,  sourceIndexZero);
+//            QModelIndex sourceIndexAttPrimary = pModelClaims_->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_ATT_PRIMARY, sourceIndexZero);
+//            // ----------------------------------------------------------------------------
+//            QModelIndex proxyIndexValue       = pProxyModelClaims_->mapFromSource(sourceIndexValue);
+//            QModelIndex proxyIndexClaimStart  = pProxyModelClaims_->mapFromSource(sourceIndexClaimStart);
+//            QModelIndex proxyIndexClaimEnd    = pProxyModelClaims_->mapFromSource(sourceIndexClaimEnd);
+//            // ----------------------------------------------------------------------------
+//            QVariant    qvarClaimId           = pModelClaims_->data(sourceIndexClaimId);
+//            QVariant    qvarNymId             = pModelClaims_->data(sourceIndexNymId);
+//            QVariant    qvarSection           = pModelClaims_->data(sourceIndexSection);
+//            QVariant    qvarType              = pModelClaims_->data(sourceIndexType);
+//            QVariant    qvarValue             = pProxyModelClaims_->data(proxyIndexValue); // Proxy here since the proxy model decodes this. UPDATE: no longer encoded.
+//            QVariant    qvarClaimStart        = pProxyModelClaims_->data(proxyIndexClaimStart); // Proxy for these two since it formats the
+//            QVariant    qvarClaimEnd          = pProxyModelClaims_->data(proxyIndexClaimEnd);   // timestamp as a human-readable string.
+//            QVariant    qvarAttributes        = pModelClaims_->data(sourceIndexAttributes);
+//            QVariant    qvarAttActive         = pModelClaims_->data(sourceIndexAttActive);
+//            QVariant    qvarAttPrimary        = pModelClaims_->data(sourceIndexAttPrimary);
+//            // ----------------------------------------------------------------------------
+//            const QString     qstrClaimId   =  qvarClaimId.isValid() ? qvarClaimId.toString() : "";
+//            const std::string claim_id      = !qstrClaimId.isEmpty() ? qstrClaimId.toStdString() : "";
+//            // ----------------------------------------------------------------------------
+//            const std::string claim_nym_id  =  qvarNymId  .isValid() ? qvarNymId.toString().toStdString() : "";
+//            const uint32_t    claim_section =  qvarSection.isValid() ? qvarSection.toUInt() : 0;
+//            const uint32_t    claim_type    =  qvarType   .isValid() ? qvarType.toUInt() : 0;
+//            const std::string claim_value   =  qvarValue  .isValid() ? qvarValue.toString().toStdString() : "";
+//            // ----------------------------------------------------------------------------
+//            const bool        claim_active  = qvarAttActive .isValid() ? qvarAttActive .toBool() : false;
+//            const bool        claim_primary = qvarAttPrimary.isValid() ? qvarAttPrimary.toBool() : false;
+//            // ----------------------------------------------------------------------------
+//            if (claim_section != indexSection)
+//                continue;
+
+//            QMap<uint32_t, QString>::iterator it_typeNames = mapTypeNames.find(claim_type);
+//            QString qstrTypeName;
+
+//            if (it_typeNames != mapTypeNames.end())
+//                qstrTypeName = it_typeNames.value();
+//            // ---------------------------------------
+//            // Add the claim to the tree.
+//            //
+//            QTreeWidgetItem * claim_item = new QTreeWidgetItem;
+//            // ---------------------------------------
+//            claim_item->setText(0, QString::fromStdString(claim_value)); // "james@blah.com"
+//            claim_item->setText(1, qstrTypeName);                        // "Personal"
+//            claim_item->setText(2, QString::fromStdString(nym_names[claim_nym_id]));
+
+//            claim_item->setData(0, Qt::UserRole+1, TREE_ITEM_TYPE_CLAIM);
+
+//            claim_item->setData(0, Qt::UserRole, qstrClaimId);
+//            claim_item->setData(1, Qt::UserRole, claim_type);
+//            claim_item->setData(2, Qt::UserRole, QString::fromStdString(claim_nym_id)); // Claimant
+//            claim_item->setData(3, Qt::UserRole, claim_section); // Section
+
+//            // ---------------------------------------
+////          claim_item->setCheckState(3, claim_primary ? Qt::Checked : Qt::Unchecked); // Moved below (as radio button)
+////          claim_item->setCheckState(4, claim_active  ? Qt::Checked : Qt::Unchecked); // Moved below (as radio button)
+//            // ---------------------------------------
+//            // NOTE: We'll do this for Nyms, not for Contacts.
+//            // At least, not for claims. (Contacts will be able to edit
+//            // their own verifications, though.)
+//            //
+////          claim_item->setFlags(claim_item->flags() |     Qt::ItemIsEditable);
+//            claim_item->setFlags(claim_item->flags() & ~ ( Qt::ItemIsEditable | Qt::ItemIsUserCheckable) );
+//            // ---------------------------------------
+//            topLevel->addChild(claim_item);
+//            treeWidgetClaims_->expandItem(claim_item);
+//            // ----------------------------------------------------------------------------
+//            // Couldn't do this until now, when the claim_item has been added to the tree.
+//            //
+////          typedef std::tuple<std::string, uint32_t, uint32_t> ButtonGroupKey;
+////          typedef std::map<ButtonGroupKey, QButtonGroup *> mapOfButtonGroups;
+////          mapOfButtonGroups mapButtonGroups;
 
 //            ButtonGroupKey keyBtnGroup{claim_nym_id, claim_section, claim_type};
 //            mapOfButtonGroups::iterator it_btn_group = mapButtonGroups.find(keyBtnGroup);
@@ -1516,6 +1742,7 @@ void MTOpentxsContactDetails::RefreshTree(QString qstrContactId, QStringList & q
 //                pButtonGroup = new QButtonGroup(treeWidgetClaims_);
 //                mapButtonGroups.insert(std::pair<ButtonGroupKey, QButtonGroup *>(keyBtnGroup, pButtonGroup));
 //            }
+//            // ----------------------------------------------------------------------------
 //            { // "Primary"
 //            QRadioButton * pRadioBtn = new QRadioButton(treeWidgetClaims_);
 //            pButtonGroup->addButton(pRadioBtn);
@@ -1532,360 +1759,148 @@ void MTOpentxsContactDetails::RefreshTree(QString qstrContactId, QStringList & q
 //            // ---------
 //            treeWidgetClaims_->setItemWidget(claim_item, 4, pRadioBtn);
 //            }
+//            // ----------------------------------------------------------------------------
+//            // VERIFICATIONS
+//            // ----------------------------------------------------------------------------
+//            // So we want to get the verifications known in the database for the
+//            // current claim.
+//            //
+//            QPointer<ModelVerifications> pVerifications = DBHandler::getInstance()->getVerificationsModel(qstrClaimId);
 
-        }
+//            if (!pVerifications)
+//                continue;
+//            // ----------------------------------------------------------------------------
+//            // Here we now add the sub-widgets for the claim verifications.
+//            //
+//            QPointer<VerificationsProxyModel> pProxyModelVerifications = new VerificationsProxyModel;
+//            pProxyModelVerifications->setSourceModel(pVerifications);
+//            // ------------------------------------------
+//            for (int iii = 0; iii < pProxyModelVerifications->rowCount(); ++iii)
+//            {
+//                QModelIndex proxyIndexZero        = pProxyModelVerifications->index(iii, 0);
+//                QModelIndex sourceIndexZero       = pProxyModelVerifications->mapToSource(proxyIndexZero);
+//                // ----------------------------------------------------------------------------
+//                QModelIndex sourceIndexVerId       = pVerifications->sibling(sourceIndexZero.row(), VERIFY_SOURCE_COL_VERIFICATION_ID, sourceIndexZero);
+//                QModelIndex sourceIndexClaimantId  = pVerifications->sibling(sourceIndexZero.row(), VERIFY_SOURCE_COL_CLAIMANT_NYM_ID, sourceIndexZero);
+//                QModelIndex sourceIndexVerifierId  = pVerifications->sibling(sourceIndexZero.row(), VERIFY_SOURCE_COL_VERIFIER_NYM_ID, sourceIndexZero);
+//                QModelIndex sourceIndexClaimId     = pVerifications->sibling(sourceIndexZero.row(), VERIFY_SOURCE_COL_CLAIM_ID,        sourceIndexZero);
+//                QModelIndex sourceIndexPolarity    = pVerifications->sibling(sourceIndexZero.row(), VERIFY_SOURCE_COL_POLARITY,        sourceIndexZero);
+//                QModelIndex sourceIndexStart       = pVerifications->sibling(sourceIndexZero.row(), VERIFY_SOURCE_COL_START,           sourceIndexZero);
+//                QModelIndex sourceIndexEnd         = pVerifications->sibling(sourceIndexZero.row(), VERIFY_SOURCE_COL_END,             sourceIndexZero);
+//                QModelIndex sourceIndexSignature   = pVerifications->sibling(sourceIndexZero.row(), VERIFY_SOURCE_COL_SIGNATURE,       sourceIndexZero);
+//                QModelIndex sourceIndexSigVerified = pVerifications->sibling(sourceIndexZero.row(), VERIFY_SOURCE_COL_SIG_VERIFIED,    sourceIndexZero);
+//                // ----------------------------------------------------------------------------
+//                QModelIndex proxyIndexPolarity    = pProxyModelVerifications->mapFromSource(sourceIndexPolarity);
+//                QModelIndex proxyIndexStart       = pProxyModelVerifications->mapFromSource(sourceIndexStart);
+//                QModelIndex proxyIndexEnd         = pProxyModelVerifications->mapFromSource(sourceIndexEnd);
+//                // ----------------------------------------------------------------------------
+//                QVariant    qvarVerId             = pVerifications->data(sourceIndexVerId);
+//                QVariant    qvarClaimantId        = pVerifications->data(sourceIndexClaimantId);
+//                QVariant    qvarVerifierId        = pVerifications->data(sourceIndexVerifierId);
+//                QVariant    qvarClaimId           = pVerifications->data(sourceIndexClaimId);
+//                // ----------------------------------------------------------------------------
+//                QVariant    qvarPolarity          = pProxyModelVerifications->data(proxyIndexPolarity);
+//                QVariant    qvarStart             = pProxyModelVerifications->data(proxyIndexStart); // Proxy for these two since it formats the
+//                QVariant    qvarEnd               = pProxyModelVerifications->data(proxyIndexEnd);   // timestamp as a human-readable string.
+//                // ----------------------------------------------------------------------------
+//                QVariant    qvarSignature         = pVerifications->data(sourceIndexSignature);
+//                QVariant    qvarSigVerified       = pVerifications->data(sourceIndexSigVerified);
+//                // ----------------------------------------------------------------------------
+//                const QString     qstrVerId      =  qvarVerId  .isValid() ? qvarVerId.toString() : "";
+//                const std::string verif_id       = !qstrVerId  .isEmpty() ? qstrVerId.toStdString() : "";
+//                // ----------------------------------------------------------------------------
+//                const QString     qstrClaimantId =  qvarClaimantId.isValid() ? qvarClaimantId.toString() : "";
+//                const QString     qstrVerifierId =  qvarVerifierId.isValid() ? qvarVerifierId.toString() : "";
 
-    } // Relationships
-    // ------------------------------------------------
+//                const std::string claimant_id    = !qstrClaimantId.isEmpty() ? qstrClaimantId.toStdString() : "";
+//                const std::string verifier_id    = !qstrVerifierId.isEmpty() ? qstrVerifierId.toStdString() : "";
+//                // ----------------------------------------------------------------------------
+//                const QString     qstrVerificationClaimId =  qvarClaimId.isValid() ? qvarClaimId.toString() : "";
+//                const std::string verification_claim_id   = !qstrVerificationClaimId.isEmpty() ? qstrVerificationClaimId.toStdString() : "";
+//                // ----------------------------------------------------------------------------
+//                QString qstrPolarity(tr("No comment"));
+//                const int claim_polarity =  qvarPolarity.isValid() ? qvarPolarity.toInt() : 0;
+//                opentxs::ClaimPolarity claimPolarity = intToClaimPolarity(claim_polarity);
 
+//                if (opentxs::ClaimPolarity::NEUTRAL == claimPolarity)
+//                {
+//                    qDebug() << __FUNCTION__ << ": ERROR! A claim verification can't have neutral polarity, since that "
+//                                "means no verification exists. How did it get into the database this way?";
+//                    continue;
+//                }
 
-    //resume
+//                const bool bPolarity = (opentxs::ClaimPolarity::NEGATIVE == claimPolarity) ? false : true;
+//                qstrPolarity = bPolarity ? tr("Confirmed") : tr("Refuted");
+//                // ----------------------------------------------------------------------------
+//                const QString     qstrSignature   =  qvarSignature.isValid()   ? qvarSignature.toString() : "";
+//                const std::string verif_signature = !qstrSignature.isEmpty()   ? qstrSignature.toStdString() : "";
+//                // ---------------------------------------
+//                const bool        bSigVerified    = qvarSigVerified .isValid() ? qvarSigVerified.toBool() : false;
+//                // ----------------------------------------------------------------------------
+//                //#define VERIFY_SOURCE_COL_VERIFICATION_ID 0
+//                //#define VERIFY_SOURCE_COL_CLAIMANT_NYM_ID 1
+//                //#define VERIFY_SOURCE_COL_VERIFIER_NYM_ID 2
+//                //#define VERIFY_SOURCE_COL_CLAIM_ID 3
+//                //#define VERIFY_SOURCE_COL_POLARITY 4
+//                //#define VERIFY_SOURCE_COL_START 5
+//                //#define VERIFY_SOURCE_COL_END 6
+//                //#define VERIFY_SOURCE_COL_SIGNATURE 7
+//                //#define VERIFY_SOURCE_COL_SIG_VERIFIED 8
 
+////                QStringList labels = {
+////                      tr("Value")
+////                    , tr("Type")
+////                    , tr("Nym")
+////                    , tr("Primary")
+////                    , tr("Active")
+////                    , tr("Polarity")
+////                };
+//                // ---------------------------------------
+//                mapOfNymNames::iterator it_names = nym_names.find(verifier_id);
+//                std::string str_verifier_name;
 
-    //        QString create_claim_table = "CREATE TABLE IF NOT EXISTS claim"
-    //               "(claim_id TEXT PRIMARY KEY,"
-    //               " claim_nym_id TEXT,"
-    //               " claim_section INTEGER,"
-    //               " claim_type INTEGER,"
-    //               " claim_value TEXT,"
-    //               " claim_start INTEGER,"
-    //               " claim_end INTEGER,"
-    //               " claim_attributes TEXT,"
-    //               " claim_att_active INTEGER,"
-    //               " claim_att_primary INTEGER"
-    //               ")";
+//                if (nym_names.end() != it_names)
+//                    str_verifier_name =  it_names->second;
+//                else
+//                    str_verifier_name = Moneychanger::It()->OT().Exec().GetNym_Name(verifier_id);
 
-//    // TODO
+////              const QString qstrClaimIdLabel = QString("%1: %2").arg(tr("Claim Id")).arg(qstrVerificationClaimId);
+//                const QString qstrClaimantIdLabel = QString("%1: %2").arg(tr("Claimant")).arg(qstrClaimantId);
+//                const QString qstrVerifierIdLabel = QString("%1: %2").arg(tr("Nym Id")).arg(qstrVerifierId);
+//                const QString qstrVerifierLabel = QString("%1: %2").arg(tr("Verifier")).arg(QString::fromStdString(str_verifier_name));
+//                // ---------------------------------------
+//                const QString qstrSignatureLabel   = QString("%1").arg(qstrSignature.isEmpty() ? tr("missing signature") : tr("signature exists"));
+//                const QString qstrSigVerifiedLabel = QString("%1").arg(bSigVerified ? tr("signature verified") : tr("signature failed"));
+//                // ---------------------------------------
+//                // Add the verification to the tree.
+//                //
+//                QTreeWidgetItem * verification_item = new QTreeWidgetItem;
+//                // ---------------------------------------
+//                verification_item->setText(0, qstrVerifierLabel); // "Jim Bob" (the Verifier on this claim verification.)
+//                verification_item->setText(1, qstrVerifierIdLabel); // with Verifier Nym Id...
+//                verification_item->setText(2, qstrClaimantIdLabel); // Verifies for Claimant Nym Id...
+//                verification_item->setText(3, qstrSignatureLabel);
+//                verification_item->setText(4, qstrSigVerifiedLabel);
 
+//                verification_item->setData(0, Qt::UserRole+1, TREE_ITEM_TYPE_VERIFICATION);
 
-
-//    // ------------------------------------------------
-//    opentxs::proto::ContactData contactData;
-//    contactData.set_version(1); // todo hardcoding.
-
-//    for (auto& it: items) {
-//        auto newSection = contactData.add_section();
-//        newSection->set_version(1);
-//        newSection->set_name(static_cast<opentxs::proto::ContactSectionName>(it.first));
-
-//        for (auto& i: it.second) {
-//            auto newItem = newSection->add_item();
-//            newItem->set_version(1);
-//            newItem->set_type(static_cast<opentxs::proto::ContactItemType>(std::get<0>(i)));
-//            newItem->set_value(std::get<1>(i));
-//            if (std::get<2>(i)) {
-//                newItem->add_attribute(opentxs::proto::CITEMATTR_PRIMARY);
-//            }
-//            newItem->add_attribute(opentxs::proto::CITEMATTR_ACTIVE);
-//        }
+//                verification_item->setData(0, Qt::UserRole, qstrVerId); // Verification ID.
+//                verification_item->setData(1, Qt::UserRole, qstrVerifierId); // Verifier Nym ID.
+//                verification_item->setData(2, Qt::UserRole, qstrClaimantId); // Claims have the claimant ID at index 2, so I'm matching that here.
+//                verification_item->setData(3, Qt::UserRole, qstrVerificationClaimId); // Claim ID stored here.
+//                verification_item->setData(5, Qt::UserRole, bPolarity); // Polarity
+//                // ---------------------------------------
+//                verification_item->setFlags(verification_item->flags() & ~ ( Qt::ItemIsEditable | Qt::ItemIsUserCheckable) );
+//    //          verification_item->setFlags(verification_item->flags() |     Qt::ItemIsEditable);
+//                // ---------------------------------------
+//                verification_item->setBackgroundColor(5, bPolarity ? QColor("green") : QColor("red"));
+//                // ---------------------------------------
+//                claim_item->addChild(verification_item);
+//                treeWidgetClaims_->expandItem(verification_item);
+//                // ----------------------------------------------------------------------------
+//            } // for (verifications)
+//        } // for (claims)
 //    }
-//    // ------------------------------------------------
-//    if (!Moneychanger::It()->OT().OTAPI().SetContactData(*pCurrentNym, contactData))
-//        qDebug() << __FUNCTION__ << ": ERROR: Failed trying to Set Contact Data!";
-////      else
-////          qDebug() << __FUNCTION__ << "SetContactData SUCCESS. items.size(): " << items.size();
-//    // ------------------------------------------------
-
-
-
-
-    // ------------------------------------------
-    // Now we loop through the sections, and for each, we populate its
-    // itemwidgets by looping through the nym_claims we got above.
-    //
-    const auto sections = Moneychanger::It()->OT().Exec().ContactSectionList();
-
-    for (const auto& indexSection: sections) {
-        if (opentxs::proto::CONTACTSECTION_RELATIONSHIP == indexSection) {
-            continue;
-        }
-        // ----------------------------------------
-        QMap<uint32_t, QString> mapTypeNames;
-
-        const std::string sectionName =
-            Moneychanger::It()->OT().Exec().ContactSectionName(indexSection);
-        const auto sectionTypes =
-            Moneychanger::It()->OT().Exec().ContactSectionTypeList(indexSection);
-
-        for (const auto& indexSectionType: sectionTypes) {
-            const std::string typeName =
-                Moneychanger::It()->OT().Exec().ContactTypeName(indexSectionType);
-            mapTypeNames.insert(
-                indexSectionType,
-                QString::fromStdString(typeName));
-        }
-        // ---------------------------------------
-        // Insert Section into Tree.
-        //
-        QTreeWidgetItem * topLevel = new QTreeWidgetItem;
-        // ------------------------------------------
-        topLevel->setText(0, QString::fromStdString(sectionName));
-        // ------------------------------------------
-        treeWidgetClaims_->addTopLevelItem(topLevel);
-        treeWidgetClaims_->expandItem(topLevel);
-        // ------------------------------------------
-
-
-        // ------------------------------------------
-        for (int ii = 0; ii < pProxyModelClaims_->rowCount(); ++ii)
-        {
-            QModelIndex proxyIndexZero        = pProxyModelClaims_->index(ii, 0);
-            QModelIndex sourceIndexZero       = pProxyModelClaims_->mapToSource(proxyIndexZero);
-            // ----------------------------------------------------------------------------
-            QModelIndex sourceIndexClaimId    = pModelClaims_->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_CLAIM_ID,    sourceIndexZero);
-            QModelIndex sourceIndexNymId      = pModelClaims_->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_NYM_ID,      sourceIndexZero);
-            QModelIndex sourceIndexSection    = pModelClaims_->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_SECTION,     sourceIndexZero);
-            QModelIndex sourceIndexType       = pModelClaims_->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_TYPE,        sourceIndexZero);
-            QModelIndex sourceIndexValue      = pModelClaims_->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_VALUE,       sourceIndexZero);
-            QModelIndex sourceIndexClaimStart = pModelClaims_->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_START,       sourceIndexZero);
-            QModelIndex sourceIndexClaimEnd   = pModelClaims_->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_END,         sourceIndexZero);
-            QModelIndex sourceIndexAttributes = pModelClaims_->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_ATTRIBUTES,  sourceIndexZero);
-            QModelIndex sourceIndexAttActive  = pModelClaims_->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_ATT_ACTIVE,  sourceIndexZero);
-            QModelIndex sourceIndexAttPrimary = pModelClaims_->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_ATT_PRIMARY, sourceIndexZero);
-            // ----------------------------------------------------------------------------
-            QModelIndex proxyIndexValue       = pProxyModelClaims_->mapFromSource(sourceIndexValue);
-            QModelIndex proxyIndexClaimStart  = pProxyModelClaims_->mapFromSource(sourceIndexClaimStart);
-            QModelIndex proxyIndexClaimEnd    = pProxyModelClaims_->mapFromSource(sourceIndexClaimEnd);
-            // ----------------------------------------------------------------------------
-            QVariant    qvarClaimId           = pModelClaims_->data(sourceIndexClaimId);
-            QVariant    qvarNymId             = pModelClaims_->data(sourceIndexNymId);
-            QVariant    qvarSection           = pModelClaims_->data(sourceIndexSection);
-            QVariant    qvarType              = pModelClaims_->data(sourceIndexType);
-            QVariant    qvarValue             = pProxyModelClaims_->data(proxyIndexValue); // Proxy here since the proxy model decodes this. UPDATE: no longer encoded.
-            QVariant    qvarClaimStart        = pProxyModelClaims_->data(proxyIndexClaimStart); // Proxy for these two since it formats the
-            QVariant    qvarClaimEnd          = pProxyModelClaims_->data(proxyIndexClaimEnd);   // timestamp as a human-readable string.
-            QVariant    qvarAttributes        = pModelClaims_->data(sourceIndexAttributes);
-            QVariant    qvarAttActive         = pModelClaims_->data(sourceIndexAttActive);
-            QVariant    qvarAttPrimary        = pModelClaims_->data(sourceIndexAttPrimary);
-            // ----------------------------------------------------------------------------
-            const QString     qstrClaimId   =  qvarClaimId.isValid() ? qvarClaimId.toString() : "";
-            const std::string claim_id      = !qstrClaimId.isEmpty() ? qstrClaimId.toStdString() : "";
-            // ----------------------------------------------------------------------------
-            const std::string claim_nym_id  =  qvarNymId  .isValid() ? qvarNymId.toString().toStdString() : "";
-            const uint32_t    claim_section =  qvarSection.isValid() ? qvarSection.toUInt() : 0;
-            const uint32_t    claim_type    =  qvarType   .isValid() ? qvarType.toUInt() : 0;
-            const std::string claim_value   =  qvarValue  .isValid() ? qvarValue.toString().toStdString() : "";
-            // ----------------------------------------------------------------------------
-            const bool        claim_active  = qvarAttActive .isValid() ? qvarAttActive .toBool() : false;
-            const bool        claim_primary = qvarAttPrimary.isValid() ? qvarAttPrimary.toBool() : false;
-            // ----------------------------------------------------------------------------
-            if (claim_section != indexSection)
-                continue;
-
-            QMap<uint32_t, QString>::iterator it_typeNames = mapTypeNames.find(claim_type);
-            QString qstrTypeName;
-
-            if (it_typeNames != mapTypeNames.end())
-                qstrTypeName = it_typeNames.value();
-            // ---------------------------------------
-            // Add the claim to the tree.
-            //
-            QTreeWidgetItem * claim_item = new QTreeWidgetItem;
-            // ---------------------------------------
-            claim_item->setText(0, QString::fromStdString(claim_value)); // "james@blah.com"
-            claim_item->setText(1, qstrTypeName);                        // "Personal"
-            claim_item->setText(2, QString::fromStdString(nym_names[claim_nym_id]));
-
-            claim_item->setData(0, Qt::UserRole+1, TREE_ITEM_TYPE_CLAIM);
-
-            claim_item->setData(0, Qt::UserRole, qstrClaimId);
-            claim_item->setData(1, Qt::UserRole, claim_type);
-            claim_item->setData(2, Qt::UserRole, QString::fromStdString(claim_nym_id)); // Claimant
-            claim_item->setData(3, Qt::UserRole, claim_section); // Section
-
-            // ---------------------------------------
-//          claim_item->setCheckState(3, claim_primary ? Qt::Checked : Qt::Unchecked); // Moved below (as radio button)
-//          claim_item->setCheckState(4, claim_active  ? Qt::Checked : Qt::Unchecked); // Moved below (as radio button)
-            // ---------------------------------------
-            // NOTE: We'll do this for Nyms, not for Contacts.
-            // At least, not for claims. (Contacts will be able to edit
-            // their own verifications, though.)
-            //
-//          claim_item->setFlags(claim_item->flags() |     Qt::ItemIsEditable);
-            claim_item->setFlags(claim_item->flags() & ~ ( Qt::ItemIsEditable | Qt::ItemIsUserCheckable) );
-            // ---------------------------------------
-            topLevel->addChild(claim_item);
-            treeWidgetClaims_->expandItem(claim_item);
-            // ----------------------------------------------------------------------------
-            // Couldn't do this until now, when the claim_item has been added to the tree.
-            //
-//          typedef std::tuple<std::string, uint32_t, uint32_t> ButtonGroupKey;
-//          typedef std::map<ButtonGroupKey, QButtonGroup *> mapOfButtonGroups;
-//          mapOfButtonGroups mapButtonGroups;
-
-            ButtonGroupKey keyBtnGroup{claim_nym_id, claim_section, claim_type};
-            mapOfButtonGroups::iterator it_btn_group = mapButtonGroups.find(keyBtnGroup);
-            QButtonGroup * pButtonGroup = nullptr;
-
-            if (mapButtonGroups.end() != it_btn_group)
-                pButtonGroup = it_btn_group->second;
-            else
-            {
-                // The button group doesn't exist yet, for this tuple.
-                // (So let's create it.)
-                //
-                pButtonGroup = new QButtonGroup(treeWidgetClaims_);
-                mapButtonGroups.insert(std::pair<ButtonGroupKey, QButtonGroup *>(keyBtnGroup, pButtonGroup));
-            }
-            // ----------------------------------------------------------------------------
-            { // "Primary"
-            QRadioButton * pRadioBtn = new QRadioButton(treeWidgetClaims_);
-            pButtonGroup->addButton(pRadioBtn);
-            pRadioBtn->setChecked(claim_primary);
-            pRadioBtn->setEnabled(false);
-            // ---------
-            treeWidgetClaims_->setItemWidget(claim_item, 3, pRadioBtn);
-            }
-            // ----------------------------------------------------------------------------
-            { // "Active"
-            QRadioButton * pRadioBtn = new QRadioButton(treeWidgetClaims_);
-            pRadioBtn->setChecked(claim_active);
-            pRadioBtn->setEnabled(false);
-            // ---------
-            treeWidgetClaims_->setItemWidget(claim_item, 4, pRadioBtn);
-            }
-            // ----------------------------------------------------------------------------
-            // VERIFICATIONS
-            // ----------------------------------------------------------------------------
-            // So we want to get the verifications known in the database for the
-            // current claim.
-            //
-            QPointer<ModelVerifications> pVerifications = DBHandler::getInstance()->getVerificationsModel(qstrClaimId);
-
-            if (!pVerifications)
-                continue;
-            // ----------------------------------------------------------------------------
-            // Here we now add the sub-widgets for the claim verifications.
-            //
-            QPointer<VerificationsProxyModel> pProxyModelVerifications = new VerificationsProxyModel;
-            pProxyModelVerifications->setSourceModel(pVerifications);
-            // ------------------------------------------
-            for (int iii = 0; iii < pProxyModelVerifications->rowCount(); ++iii)
-            {
-                QModelIndex proxyIndexZero        = pProxyModelVerifications->index(iii, 0);
-                QModelIndex sourceIndexZero       = pProxyModelVerifications->mapToSource(proxyIndexZero);
-                // ----------------------------------------------------------------------------
-                QModelIndex sourceIndexVerId       = pVerifications->sibling(sourceIndexZero.row(), VERIFY_SOURCE_COL_VERIFICATION_ID, sourceIndexZero);
-                QModelIndex sourceIndexClaimantId  = pVerifications->sibling(sourceIndexZero.row(), VERIFY_SOURCE_COL_CLAIMANT_NYM_ID, sourceIndexZero);
-                QModelIndex sourceIndexVerifierId  = pVerifications->sibling(sourceIndexZero.row(), VERIFY_SOURCE_COL_VERIFIER_NYM_ID, sourceIndexZero);
-                QModelIndex sourceIndexClaimId     = pVerifications->sibling(sourceIndexZero.row(), VERIFY_SOURCE_COL_CLAIM_ID,        sourceIndexZero);
-                QModelIndex sourceIndexPolarity    = pVerifications->sibling(sourceIndexZero.row(), VERIFY_SOURCE_COL_POLARITY,        sourceIndexZero);
-                QModelIndex sourceIndexStart       = pVerifications->sibling(sourceIndexZero.row(), VERIFY_SOURCE_COL_START,           sourceIndexZero);
-                QModelIndex sourceIndexEnd         = pVerifications->sibling(sourceIndexZero.row(), VERIFY_SOURCE_COL_END,             sourceIndexZero);
-                QModelIndex sourceIndexSignature   = pVerifications->sibling(sourceIndexZero.row(), VERIFY_SOURCE_COL_SIGNATURE,       sourceIndexZero);
-                QModelIndex sourceIndexSigVerified = pVerifications->sibling(sourceIndexZero.row(), VERIFY_SOURCE_COL_SIG_VERIFIED,    sourceIndexZero);
-                // ----------------------------------------------------------------------------
-                QModelIndex proxyIndexPolarity    = pProxyModelVerifications->mapFromSource(sourceIndexPolarity);
-                QModelIndex proxyIndexStart       = pProxyModelVerifications->mapFromSource(sourceIndexStart);
-                QModelIndex proxyIndexEnd         = pProxyModelVerifications->mapFromSource(sourceIndexEnd);
-                // ----------------------------------------------------------------------------
-                QVariant    qvarVerId             = pVerifications->data(sourceIndexVerId);
-                QVariant    qvarClaimantId        = pVerifications->data(sourceIndexClaimantId);
-                QVariant    qvarVerifierId        = pVerifications->data(sourceIndexVerifierId);
-                QVariant    qvarClaimId           = pVerifications->data(sourceIndexClaimId);
-                // ----------------------------------------------------------------------------
-                QVariant    qvarPolarity          = pProxyModelVerifications->data(proxyIndexPolarity);
-                QVariant    qvarStart             = pProxyModelVerifications->data(proxyIndexStart); // Proxy for these two since it formats the
-                QVariant    qvarEnd               = pProxyModelVerifications->data(proxyIndexEnd);   // timestamp as a human-readable string.
-                // ----------------------------------------------------------------------------
-                QVariant    qvarSignature         = pVerifications->data(sourceIndexSignature);
-                QVariant    qvarSigVerified       = pVerifications->data(sourceIndexSigVerified);
-                // ----------------------------------------------------------------------------
-                const QString     qstrVerId      =  qvarVerId  .isValid() ? qvarVerId.toString() : "";
-                const std::string verif_id       = !qstrVerId  .isEmpty() ? qstrVerId.toStdString() : "";
-                // ----------------------------------------------------------------------------
-                const QString     qstrClaimantId =  qvarClaimantId.isValid() ? qvarClaimantId.toString() : "";
-                const QString     qstrVerifierId =  qvarVerifierId.isValid() ? qvarVerifierId.toString() : "";
-
-                const std::string claimant_id    = !qstrClaimantId.isEmpty() ? qstrClaimantId.toStdString() : "";
-                const std::string verifier_id    = !qstrVerifierId.isEmpty() ? qstrVerifierId.toStdString() : "";
-                // ----------------------------------------------------------------------------
-                const QString     qstrVerificationClaimId =  qvarClaimId.isValid() ? qvarClaimId.toString() : "";
-                const std::string verification_claim_id   = !qstrVerificationClaimId.isEmpty() ? qstrVerificationClaimId.toStdString() : "";
-                // ----------------------------------------------------------------------------
-                QString qstrPolarity(tr("No comment"));
-                const int claim_polarity =  qvarPolarity.isValid() ? qvarPolarity.toInt() : 0;
-                opentxs::ClaimPolarity claimPolarity = intToClaimPolarity(claim_polarity);
-
-                if (opentxs::ClaimPolarity::NEUTRAL == claimPolarity)
-                {
-                    qDebug() << __FUNCTION__ << ": ERROR! A claim verification can't have neutral polarity, since that "
-                                "means no verification exists. How did it get into the database this way?";
-                    continue;
-                }
-
-                const bool bPolarity = (opentxs::ClaimPolarity::NEGATIVE == claimPolarity) ? false : true;
-                qstrPolarity = bPolarity ? tr("Confirmed") : tr("Refuted");
-                // ----------------------------------------------------------------------------
-                const QString     qstrSignature   =  qvarSignature.isValid()   ? qvarSignature.toString() : "";
-                const std::string verif_signature = !qstrSignature.isEmpty()   ? qstrSignature.toStdString() : "";
-                // ---------------------------------------
-                const bool        bSigVerified    = qvarSigVerified .isValid() ? qvarSigVerified.toBool() : false;
-                // ----------------------------------------------------------------------------
-                //#define VERIFY_SOURCE_COL_VERIFICATION_ID 0
-                //#define VERIFY_SOURCE_COL_CLAIMANT_NYM_ID 1
-                //#define VERIFY_SOURCE_COL_VERIFIER_NYM_ID 2
-                //#define VERIFY_SOURCE_COL_CLAIM_ID 3
-                //#define VERIFY_SOURCE_COL_POLARITY 4
-                //#define VERIFY_SOURCE_COL_START 5
-                //#define VERIFY_SOURCE_COL_END 6
-                //#define VERIFY_SOURCE_COL_SIGNATURE 7
-                //#define VERIFY_SOURCE_COL_SIG_VERIFIED 8
-
-//                QStringList labels = {
-//                      tr("Value")
-//                    , tr("Type")
-//                    , tr("Nym")
-//                    , tr("Primary")
-//                    , tr("Active")
-//                    , tr("Polarity")
-//                };
-                // ---------------------------------------
-                mapOfNymNames::iterator it_names = nym_names.find(verifier_id);
-                std::string str_verifier_name;
-
-                if (nym_names.end() != it_names)
-                    str_verifier_name =  it_names->second;
-                else
-                    str_verifier_name = Moneychanger::It()->OT().Exec().GetNym_Name(verifier_id);
-
-//              const QString qstrClaimIdLabel = QString("%1: %2").arg(tr("Claim Id")).arg(qstrVerificationClaimId);
-                const QString qstrClaimantIdLabel = QString("%1: %2").arg(tr("Claimant")).arg(qstrClaimantId);
-                const QString qstrVerifierIdLabel = QString("%1: %2").arg(tr("Nym Id")).arg(qstrVerifierId);
-                const QString qstrVerifierLabel = QString("%1: %2").arg(tr("Verifier")).arg(QString::fromStdString(str_verifier_name));
-                // ---------------------------------------
-                const QString qstrSignatureLabel   = QString("%1").arg(qstrSignature.isEmpty() ? tr("missing signature") : tr("signature exists"));
-                const QString qstrSigVerifiedLabel = QString("%1").arg(bSigVerified ? tr("signature verified") : tr("signature failed"));
-                // ---------------------------------------
-                // Add the verification to the tree.
-                //
-                QTreeWidgetItem * verification_item = new QTreeWidgetItem;
-                // ---------------------------------------
-                verification_item->setText(0, qstrVerifierLabel); // "Jim Bob" (the Verifier on this claim verification.)
-                verification_item->setText(1, qstrVerifierIdLabel); // with Verifier Nym Id...
-                verification_item->setText(2, qstrClaimantIdLabel); // Verifies for Claimant Nym Id...
-                verification_item->setText(3, qstrSignatureLabel);
-                verification_item->setText(4, qstrSigVerifiedLabel);
-
-                verification_item->setData(0, Qt::UserRole+1, TREE_ITEM_TYPE_VERIFICATION);
-
-                verification_item->setData(0, Qt::UserRole, qstrVerId); // Verification ID.
-                verification_item->setData(1, Qt::UserRole, qstrVerifierId); // Verifier Nym ID.
-                verification_item->setData(2, Qt::UserRole, qstrClaimantId); // Claims have the claimant ID at index 2, so I'm matching that here.
-                verification_item->setData(3, Qt::UserRole, qstrVerificationClaimId); // Claim ID stored here.
-                verification_item->setData(5, Qt::UserRole, bPolarity); // Polarity
-                // ---------------------------------------
-                verification_item->setFlags(verification_item->flags() & ~ ( Qt::ItemIsEditable | Qt::ItemIsUserCheckable) );
-    //          verification_item->setFlags(verification_item->flags() |     Qt::ItemIsEditable);
-                // ---------------------------------------
-                verification_item->setBackgroundColor(5, bPolarity ? QColor("green") : QColor("red"));
-                // ---------------------------------------
-                claim_item->addChild(verification_item);
-                treeWidgetClaims_->expandItem(verification_item);
-                // ----------------------------------------------------------------------------
-            } // for (verifications)
-        } // for (claims)
-    }
 
     treeWidgetClaims_->blockSignals(false);
     treeWidgetClaims_->resizeColumnToContents(0);
@@ -1925,7 +1940,7 @@ void MTOpentxsContactDetails::on_pushButtonPay_clicked()
     if (!qstrContactID.isEmpty())
     {
         // --------------------------------------------------
-        MTSendDlg * send_window = new MTSendDlg(NULL);
+        MTSendDlg * send_window = new MTSendDlg(nullptr);
         send_window->setAttribute(Qt::WA_DeleteOnClose);
         // --------------------------------------------------
         QString qstrAcct = Moneychanger::It()->get_default_account_id();
@@ -2094,7 +2109,7 @@ static void blah()
 //virtual
 void MTOpentxsContactDetails::refresh(QString strID, QString strName)
 {
-    if ((NULL == ui) || strID.isEmpty())
+    if ((nullptr == ui) || strID.isEmpty())
     {
         ui->pushButtonMsg->setEnabled(false);
         ui->pushButtonPay->setEnabled(false);
@@ -2107,6 +2122,7 @@ void MTOpentxsContactDetails::refresh(QString strID, QString strName)
         if (m_pPlainTextEditNotes)
             m_pPlainTextEditNotes->setPlainText("");
 
+        treeWidgetClaims_->setVisible(false);
         if (treeWidgetClaims_)
             ClearTree();
 
@@ -2146,11 +2162,11 @@ void MTOpentxsContactDetails::refresh(QString strID, QString strName)
     {
         ui->verticalLayout->removeWidget(m_pHeaderWidget);
 
-        m_pHeaderWidget->setParent(NULL);
+        m_pHeaderWidget->setParent(nullptr);
         m_pHeaderWidget->disconnect();
         m_pHeaderWidget->deleteLater();
 
-        m_pHeaderWidget = NULL;
+        m_pHeaderWidget = nullptr;
     }
     ui->verticalLayout->insertWidget(0, pHeaderWidget);
     m_pHeaderWidget = pHeaderWidget;
@@ -2233,14 +2249,101 @@ void MTOpentxsContactDetails::refresh(QString strID, QString strName)
     // --------------------------------------------
     // TAB: "Notes"
     //
-//    if (m_pPlainTextEditNotes)  //todo
-//        m_pPlainTextEditNotes->setPlainText(strDetails);
+    if (m_pPlainTextEditNotes)
+    {
+        QString qstrOutput;
+        auto contactID = opentxs::Identifier::Factory(strID.toStdString());
+        auto& contact = Moneychanger::It()->OT().UI().Contact(contactID);
+        qstrOutput += QString("%1: %2 \n").arg(tr("Display Name")).arg(QString::fromStdString(contact.DisplayName()));
+        qstrOutput += QString("%1: %2 \n").arg(tr("ContactID")).arg(QString::fromStdString(contact.ContactID()));
+        qstrOutput += QString("%1: %2 \n").arg(tr("PaymentCode")).arg(QString::fromStdString(contact.PaymentCode()));
+
+        auto section = contact.First();
+
+        if (section->Valid()) {
+            auto lastSection = section->Last();
+
+            qstrOutput += QString("%1: %2 \n").arg(tr("Contact Section Name")).arg(QString::fromStdString(section->Name("en")));
+
+            const std::string sectionName =
+                Moneychanger::It()->OT().Exec().ContactSectionName(section->Type());
+            qstrOutput += QString("%1: %2 \n").arg(tr("Section Type")).arg(QString::fromStdString(sectionName));
+
+            display_groups(qstrOutput, section);
+
+            while (false == lastSection) {
+                section = contact.Next();
+                lastSection = section->Last();
+
+                qstrOutput += QString("%1: %2 \n").arg(tr("Contact Section Name")).arg(QString::fromStdString(section->Name("en")));
+
+                const std::string sectionName =
+                    Moneychanger::It()->OT().Exec().ContactSectionName(section->Type());
+                qstrOutput += QString("%1: %2 \n").arg(tr("Section Type")).arg(QString::fromStdString(sectionName));
+
+                display_groups(qstrOutput, section);
+            }
+        }
+
+        m_pPlainTextEditNotes->setPlainText(qstrOutput);
+    }
     // -----------------------------------
     // TAB: "CREDENTIALS"
     //
     if (m_pCredentials)
         m_pCredentials->refresh(qstrlistNymIDs);
     // -----------------------------------------------------------------------
+}
+
+
+void MTOpentxsContactDetails::display_groups(QString& qstrOutput, const opentxs::ui::ContactSection& section) const
+{
+    auto group = section.First();
+
+    if (false == group->Valid()) { return; }
+
+    auto lastGroup = group->Last();
+
+    qstrOutput += QString("%1: %2 \n").arg(tr("Group Name")).arg(QString::fromStdString(group->Name("en")));
+
+    std::string str_group_type = Moneychanger::It()->OT().Exec().ContactTypeName(group->Type());
+    qstrOutput += QString("%1: %2 \n").arg(tr("Group Type")).arg(QString::fromStdString(str_group_type));
+
+    display_items(qstrOutput, group);
+
+    while (false == lastGroup) {
+        group = section.Next();
+        lastGroup = group->Last();
+        qstrOutput += QString("%1: %2 \n").arg(tr("Group Name")).arg(QString::fromStdString(group->Name("en")));
+
+        std::string str_group_type = Moneychanger::It()->OT().Exec().ContactTypeName(group->Type());
+        qstrOutput += QString("%1: %2 \n").arg(tr("Group Type")).arg(QString::fromStdString(str_group_type));
+        display_items(qstrOutput, group);
+    }
+}
+
+void MTOpentxsContactDetails::display_items(QString& qstrOutput, const opentxs::ui::ContactSubsection& group) const
+{
+    auto item = group.First();
+
+    if (false == item->Valid()) { return; }
+
+    auto lastItem = item->Last();
+
+    qstrOutput += QString("%1: %2 \n").arg(tr("Claim Id")).arg(QString::fromStdString(item->ClaimID()));
+    qstrOutput += QString("%1: %2 \n").arg(tr("Value")).arg(QString::fromStdString(item->Value()));
+    qstrOutput += QString("%1: %2 \n").arg(tr("Is Primary?")).arg(tr(item->IsPrimary() ? "Yes" : "No"));
+    qstrOutput += QString("%1: %2 \n").arg(tr("Is Active?")).arg(tr(item->IsActive() ? "Yes" : "No"));
+
+    while (false == lastItem) {
+        item = group.Next();
+        lastItem = item->Last();
+
+        qstrOutput += QString("%1: %2 \n").arg(tr("Claim Id")).arg(QString::fromStdString(item->ClaimID()));
+        qstrOutput += QString("%1: %2 \n").arg(tr("Value")).arg(QString::fromStdString(item->Value()));
+        qstrOutput += QString("%1: %2 \n").arg(tr("Is Primary?")).arg(tr(item->IsPrimary() ? "Yes" : "No"));
+        qstrOutput += QString("%1: %2 \n").arg(tr("Is Active?")).arg(tr(item->IsActive() ? "Yes" : "No"));
+    }
 }
 
 

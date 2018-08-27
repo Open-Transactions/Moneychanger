@@ -659,129 +659,129 @@ void Moneychanger::onCheckNym(QString nymId)
         qDebug() << "onCheckNym: Loading the nym failed. (Which should NOT happen since we supposedly JUST downloaded that Nym's credentials...)";
         return;
     }
-    // ------------------------------------------------
-    // Clear the claims and verifications we already have in the database. (If any.)
-    //
-    MTContactHandler::getInstance()->clearClaimsForNym(nymId);
-    // ----------------------------------------------
-    // Import the claims.
+//    // ------------------------------------------------
+//    // Clear the claims and verifications we already have in the database. (If any.)
+//    //
+//    MTContactHandler::getInstance()->clearClaimsForNym(nymId);
+//    // ----------------------------------------------
+//    // Import the claims.
 
-    const std::string str_checked_nym_id(strNymId.Get());
+//    const std::string str_checked_nym_id(strNymId.Get());
 
-    const auto data =
-        ot_.Exec().GetContactData(nymId.toStdString());
-    auto claims =
-        opentxs::proto::DataToProto<opentxs::proto::ContactData>
-            (opentxs::Data::Factory(data.c_str(), static_cast<uint32_t>(data.length())));
+//    const auto data =
+//        ot_.Exec().GetContactData(nymId.toStdString());
+//    auto claims =
+//        opentxs::proto::DataToProto<opentxs::proto::ContactData>
+//            (opentxs::Data::Factory(data.c_str(), static_cast<uint32_t>(data.length())));
 
-    for (const auto& section: claims.section()) {
-        for (const auto& claim: section.item()) {
-            // ---------------------------------------
-            const uint32_t claim_section = section.name();
-            const uint32_t claim_type = claim.type();
-            const QString claim_value = QString::fromStdString(claim.value());
+//    for (const auto& section: claims.section()) {
+//        for (const auto& claim: section.item()) {
+//            // ---------------------------------------
+//            const uint32_t claim_section = section.name();
+//            const uint32_t claim_type = claim.type();
+//            const QString claim_value = QString::fromStdString(claim.value());
 
-            // Add the claim to the database if not there already.
-            const bool upserted =
-                MTContactHandler::getInstance()->upsertClaim(
-                    *pCurrentNym,
-                    claim_section,
-                    claim);
+//            // Add the claim to the database if not there already.
+//            const bool upserted =
+//                MTContactHandler::getInstance()->upsertClaim(
+//                    *pCurrentNym,
+//                    claim_section,
+//                    claim);
 
-            if (!upserted) {
-                qDebug() << "onCheckNym: the call to upsertClaim just failed. "
-                         << "(Returning.)";
-                return;
-            }
+//            if (!upserted) {
+//                qDebug() << "onCheckNym: the call to upsertClaim just failed. "
+//                         << "(Returning.)";
+//                return;
+//            }
 
-            bool claim_att_active  = false;
-            bool claim_att_primary = false;
+//            bool claim_att_active  = false;
+//            bool claim_att_primary = false;
 
-            for (const auto& attribute : claim.attribute()) {
-                if (opentxs::proto::CITEMATTR_ACTIVE  == attribute) {
-                    claim_att_active  = true;
-                }
-                if (opentxs::proto::CITEMATTR_PRIMARY == attribute) {
-                    claim_att_primary = true;
-                }
-            }
+//            for (const auto& attribute : claim.attribute()) {
+//                if (opentxs::proto::CITEMATTR_ACTIVE  == attribute) {
+//                    claim_att_active  = true;
+//                }
+//                if (opentxs::proto::CITEMATTR_PRIMARY == attribute) {
+//                    claim_att_primary = true;
+//                }
+//            }
 
-            if (claim_att_active && claim_att_primary) {
-                if (claim_section == opentxs::proto::CONTACTSECTION_IDENTIFIER) {
-                    MTContactHandler::getInstance()->NotifyOfNymNamePair(
-                        nymId,
-                        claim_value);
-                }
-                if ((claim_section == opentxs::proto::CONTACTSECTION_COMMUNICATION) &&
-                    (claim_type == opentxs::proto::CITEMTYPE_BITMESSAGE)) {
-                        // NOTE: May not need to do anything here. We already
-                        // imported the claims, and we can already search the
-                        // claims for Bitmessage address and NymID, which we
-                        // are already doing.
-                }
-            }
-        }
-    }
-    // -------------------------------------------------------
-    // Import the verifications.
-    //
-    const auto ver_data =
-        ot_.Exec().GetVerificationSet(nymId.toStdString());
+//            if (claim_att_active && claim_att_primary) {
+//                if (claim_section == opentxs::proto::CONTACTSECTION_IDENTIFIER) {
+//                    MTContactHandler::getInstance()->NotifyOfNymNamePair(
+//                        nymId,
+//                        claim_value);
+//                }
+//                if ((claim_section == opentxs::proto::CONTACTSECTION_COMMUNICATION) &&
+//                    (claim_type == opentxs::proto::CITEMTYPE_BITMESSAGE)) {
+//                        // NOTE: May not need to do anything here. We already
+//                        // imported the claims, and we can already search the
+//                        // claims for Bitmessage address and NymID, which we
+//                        // are already doing.
+//                }
+//            }
+//        }
+//    }
+//    // -------------------------------------------------------
+//    // Import the verifications.
+//    //
+//    const auto ver_data =
+//        ot_.Exec().GetVerificationSet(nymId.toStdString());
 
-    auto the_set =
-        opentxs::proto::DataToProto<opentxs::proto::VerificationSet>
-            (opentxs::Data::Factory(ver_data.c_str(), ver_data.length()));
+//    auto the_set =
+//        opentxs::proto::DataToProto<opentxs::proto::VerificationSet>
+//            (opentxs::Data::Factory(ver_data.c_str(), ver_data.length()));
 
-    // Internal verifications:
-    // Here I'm looping through pCurrentNym's verifications of other people's claims.
-    for (auto& claimant: the_set.internal().identity()) {
-        // Here we're looping through those other people. (Claimants.)
-        const std::string& str_claimant_id = claimant.nym();
+//    // Internal verifications:
+//    // Here I'm looping through pCurrentNym's verifications of other people's claims.
+//    for (auto& claimant: the_set.internal().identity()) {
+//        // Here we're looping through those other people. (Claimants.)
+//        const std::string& str_claimant_id = claimant.nym();
 
-        for (auto& verification : claimant.verification()) {
-            const bool success =
-                MTContactHandler::getInstance()->upsertClaimVerification(
-                    str_claimant_id,
-                    str_checked_nym_id,
-                    verification,
-                    true);  //bIsInternal=true
-            if (!success) {
-                qDebug() << "onCheckNym: the call to "
-                         << "upsertInternalClaimVerification just failed. "
-                         << "(Returning.)";
-                return;
-            }
-        }
-    }
+//        for (auto& verification : claimant.verification()) {
+//            const bool success =
+//                MTContactHandler::getInstance()->upsertClaimVerification(
+//                    str_claimant_id,
+//                    str_checked_nym_id,
+//                    verification,
+//                    true);  //bIsInternal=true
+//            if (!success) {
+//                qDebug() << "onCheckNym: the call to "
+//                         << "upsertInternalClaimVerification just failed. "
+//                         << "(Returning.)";
+//                return;
+//            }
+//        }
+//    }
 
-    // External verifications:
-    // Here I'm looping through other people's verifications of pCurrentNym's claims.
-    for (auto& verifier: the_set.external().identity()) {
-        const std::string& str_verifier_id  = verifier.nym();
+//    // External verifications:
+//    // Here I'm looping through other people's verifications of pCurrentNym's claims.
+//    for (auto& verifier: the_set.external().identity()) {
+//        const std::string& str_verifier_id  = verifier.nym();
 
-        for (auto& verification : verifier.verification()) {
-            const bool success =
-                MTContactHandler::getInstance()->upsertClaimVerification(
-                    str_checked_nym_id,
-                    str_verifier_id,
-                    verification,
-                    false); //bIsInternal=true by default.
-            if (!success) {
-                qDebug() << "onCheckNym: the call to "
-                         << "upsertExternalClaimVerification just failed. "
-                         << "(Returning.)";
-                return;
-            }
-        }
-    }
-    // -------------------------------------------------------
-    // Import the repudiations.
+//        for (auto& verification : verifier.verification()) {
+//            const bool success =
+//                MTContactHandler::getInstance()->upsertClaimVerification(
+//                    str_checked_nym_id,
+//                    str_verifier_id,
+//                    verification,
+//                    false); //bIsInternal=true by default.
+//            if (!success) {
+//                qDebug() << "onCheckNym: the call to "
+//                         << "upsertExternalClaimVerification just failed. "
+//                         << "(Returning.)";
+//                return;
+//            }
+//        }
+//    }
+//    // -------------------------------------------------------
+//    // Import the repudiations.
 
 
 
-    // -------------------------------------------------------
-    // emit signal that claims / verifications were updated.
-    //
+//    // -------------------------------------------------------
+//    // emit signal that claims / verifications were updated.
+//    //
     emit claimsUpdatedForNym(nymId);
 }
 
@@ -921,14 +921,14 @@ Moneychanger::~Moneychanger()
 //                        {
 //                            NetworkModule * pModule = MTComms::find(qstrConnectStr.toStdString());
 
-//                            if ((NULL == pModule) && MTComms::add(qstrMethodType.toStdString(), qstrConnectStr.toStdString()))
+//                            if ((nullptr == pModule) && MTComms::add(qstrMethodType.toStdString(), qstrConnectStr.toStdString()))
 //                                pModule = MTComms::find(qstrConnectStr.toStdString());
 
-//                            if (NULL == pModule)
+//                            if (nullptr == pModule)
 //                                // todo probably need a messagebox here.
 //                                qDebug() << QString("PopulateRecords: Unable to add a %1 interface with connection string: %2").arg(qstrMethodType).arg(qstrConnectStr);
 
-//                            if ((NULL != pModule) && pModule->accessible())
+//                            if ((nullptr != pModule) && pModule->accessible())
 //                            {
 //                                if ((-1) == listCheckOnlyOnce.indexOf(qstrConnectStr)) // Not on the list yet.
 //                                {
@@ -1029,7 +1029,7 @@ Moneychanger::~Moneychanger()
 //                                        } // if (!qstrAddress.isEmpty())
 //                                    } // for (addresses)
 //                                } // if GetAddressesByNym
-//                            } // if ((NULL != pModule) && pModule->accessible())
+//                            } // if ((nullptr != pModule) && pModule->accessible())
 //                        } // if (!qstrConnectStr.isEmpty())
 //                    } // if nFilterByMethodID > 0
 //                } // if (stringlist.size() >= 2)
@@ -1271,49 +1271,49 @@ void Moneychanger::SetupMainMenu()
     if (asset_list_id)
     {
         delete asset_list_id;
-        asset_list_id = NULL;
+        asset_list_id = nullptr;
     }
 
     if (asset_list_name)
     {
         delete asset_list_name;
-        asset_list_name = NULL;
+        asset_list_name = nullptr;
     }
     // --------------------------------------------------
     if (server_list_id)
     {
         delete server_list_id;
-        server_list_id = NULL;
+        server_list_id = nullptr;
     }
 
     if (server_list_name)
     {
         delete server_list_name;
-        server_list_name = NULL;
+        server_list_name = nullptr;
     }
     // --------------------------------------------------
     if (nym_list_id)
     {
         delete nym_list_id;
-        nym_list_id = NULL;
+        nym_list_id = nullptr;
     }
 
     if (nym_list_name)
     {
         delete nym_list_name;
-        nym_list_name = NULL;
+        nym_list_name = nullptr;
     }
     // --------------------------------------------------
     if (account_list_id)
     {
         delete account_list_id;
-        account_list_id = NULL;
+        account_list_id = nullptr;
     }
 
     if (account_list_name)
     {
         delete account_list_name;
-        account_list_name = NULL;
+        account_list_name = nullptr;
     }
     // --------------------------------------------------
 
@@ -1323,11 +1323,11 @@ void Moneychanger::SetupMainMenu()
     // --------------------------------------------------------------
     if (mc_systrayMenu)
     {
-        mc_systrayMenu->setParent(NULL);
+        mc_systrayMenu->setParent(nullptr);
         mc_systrayMenu->disconnect();
         mc_systrayMenu->deleteLater();
 
-        mc_systrayMenu = NULL;
+        mc_systrayMenu = nullptr;
     }
     // --------------------------------------------------------------
 
@@ -1350,8 +1350,8 @@ void Moneychanger::SetupMainMenu()
     // --------------------------------------------------------------
     mc_systrayMenu->addSeparator();
     // --------------------------------------------------------------
-    if (hasAccounts())
-        SetupPaymentsMenu(mc_systrayMenu);
+//    if (hasAccounts())
+//        SetupPaymentsMenu(mc_systrayMenu);
     if (expertMode() && hasNyms())
         SetupMessagingMenu(mc_systrayMenu);
     // --------------------------------------------------------------
@@ -1641,7 +1641,7 @@ void Moneychanger::SetupNymMenu(QPointer<QMenu> & parent_menu)
     parent_menu->addMenu(current_menu);
 
     //Add a "Manage pseudonym" action button (and connection)
-    QAction * manage_nyms = new QAction(tr("Manage my identities..."), current_menu);
+    QAction * manage_nyms = new QAction(tr("My identities..."), current_menu);
     manage_nyms->setData(QVariant(QString("openmanager")));
     current_menu->addAction(manage_nyms);
     connect(current_menu, SIGNAL(triggered(QAction*)), this, SLOT(mc_nymselection_triggered(QAction*)));
@@ -2134,7 +2134,7 @@ void Moneychanger::mc_crypto_sign_slot()
 void Moneychanger::mc_decrypt_show_dialog()
 {
     // --------------------------------------------------
-    DlgDecrypt * decrypt_window = new DlgDecrypt(NULL);
+    DlgDecrypt * decrypt_window = new DlgDecrypt(nullptr);
     decrypt_window->setAttribute(Qt::WA_DeleteOnClose);
     // --------------------------------------------------
     decrypt_window->dialog();
@@ -2154,7 +2154,7 @@ void Moneychanger::mc_crypto_verify_slot()
 void Moneychanger::mc_encrypt_show_dialog(bool bEncrypt/*=true*/, bool bSign/*=true*/)
 {
     // --------------------------------------------------
-    DlgEncrypt * encrypt_window = new DlgEncrypt(NULL);
+    DlgEncrypt * encrypt_window = new DlgEncrypt(nullptr);
     encrypt_window->setAttribute(Qt::WA_DeleteOnClose);
     // --------------------------------------------------
     encrypt_window->SetEncrypt(bEncrypt);
@@ -2287,7 +2287,7 @@ void Moneychanger::onExpertModeUpdated(bool bExpertMode)
     {
         bActivityWindowVisible = activity_window->isVisible();
         // -------------------------------------
-        activity_window->setParent(NULL);
+        activity_window->setParent(nullptr);
         activity_window->disconnect();
         activity_window->setAttribute(Qt::WA_DeleteOnClose, true);
         activity_window->close();
@@ -2307,7 +2307,7 @@ void Moneychanger::onExpertModeUpdated(bool bExpertMode)
         nym_id = nymswindow->m_qstrCurrentID;
         bNymsWindowVisible = nymswindow->isVisible();
         // -------------------------------------
-        nymswindow->setParent(NULL);
+        nymswindow->setParent(nullptr);
         nymswindow->disconnect();
         nymswindow->setAttribute(Qt::WA_DeleteOnClose, true);
         nymswindow->close();
@@ -2326,7 +2326,7 @@ void Moneychanger::onExpertModeUpdated(bool bExpertMode)
         acct_id = accountswindow->m_qstrCurrentID;
         bAccountWindowVisible = accountswindow->isVisible();
         // -------------------------------------
-        accountswindow->setParent(NULL);
+        accountswindow->setParent(nullptr);
         accountswindow->disconnect();
         accountswindow->setAttribute(Qt::WA_DeleteOnClose, true);
         accountswindow->close();
@@ -2345,7 +2345,7 @@ void Moneychanger::onExpertModeUpdated(bool bExpertMode)
         contact_id = contactswindow->m_qstrCurrentID;
         bContactWindowVisible = contactswindow->isVisible();
         // -------------------------------------
-        contactswindow->setParent(NULL);
+        contactswindow->setParent(nullptr);
         contactswindow->disconnect();
         contactswindow->setAttribute(Qt::WA_DeleteOnClose, true);
         contactswindow->close();
@@ -2388,7 +2388,7 @@ void Moneychanger::mc_nymmanager_dialog(QString qstrPresetID/*=QString("")*/)
         // ------------------------------
     } // for
     // -------------------------------------
-    nymswindow->setWindowTitle(tr("Manage my identities"));
+    nymswindow->setWindowTitle(tr("My identities"));
     // -------------------------------------
     if (bFoundPreset)
         nymswindow->SetPreSelected(qstrPresetID);
@@ -2903,7 +2903,7 @@ void Moneychanger::onNeedToDownloadMail()
 
 //                    // Use net module to delete msg ID
 //                    //
-//                    if (NULL != pModule)
+//                    if (nullptr != pModule)
 //                    {
 //                        if (recordmt.IsOutgoing())
 //                        {
@@ -5519,7 +5519,9 @@ void Moneychanger::mc_serverselection_triggered(QAction * action_triggered)
   **/
 void Moneychanger::mc_pair_node_slot()
 {
-    QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), tr("Make sure the pairing cable is attached, then click OK."));
+    if (QMessageBox::Cancel == QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), tr("Make sure the pairing cable is attached, then click OK."),
+                                    QMessageBox::Ok | QMessageBox::Cancel))
+        return;
     // ----------------------------------------
     const auto infos = QSerialPortInfo::availablePorts();
     for (const QSerialPortInfo &info : infos) {
@@ -6465,7 +6467,7 @@ void Moneychanger::mc_proposeplan_slot()
 void Moneychanger::mc_proposeplan_show_dialog(QString qstrAcct/*=QString("")*/, QString qstrContact/*=QString("")*/)
 {
     // --------------------------------------------------
-    ProposePlanDlg * plan_window = new ProposePlanDlg(NULL);
+    ProposePlanDlg * plan_window = new ProposePlanDlg(nullptr);
     plan_window->setAttribute(Qt::WA_DeleteOnClose);
     // --------------------------------------------------
     QString qstr_acct_id = qstrAcct.isEmpty() ? this->get_default_account_id() : qstrAcct;
@@ -6513,7 +6515,7 @@ void Moneychanger::mc_request_to_acct(QString qstrAcct)
 void Moneychanger::mc_requestfunds_show_dialog(QString qstrAcct/*=QString("")*/, QString qstrContact/*=QString("")*/)
 {
     // --------------------------------------------------
-    MTRequestDlg * request_window = new MTRequestDlg(NULL);
+    MTRequestDlg * request_window = new MTRequestDlg(nullptr);
     request_window->setAttribute(Qt::WA_DeleteOnClose);
     // --------------------------------------------------
     QString qstr_acct_id = qstrAcct.isEmpty() ? this->get_default_account_id() : qstrAcct;
@@ -6548,7 +6550,7 @@ void Moneychanger::mc_send_from_acct_to_contact(QString qstrAcct, QString qstrCo
 void Moneychanger::mc_sendfunds_show_dialog(QString qstrAcct/*=QString("")*/, QString qstrContact/*=QString("")*/)
 {
     // --------------------------------------------------
-    MTSendDlg * send_window = new MTSendDlg(NULL);
+    MTSendDlg * send_window = new MTSendDlg(nullptr);
     send_window->setAttribute(Qt::WA_DeleteOnClose);
     // --------------------------------------------------
     QString qstr_acct_id = qstrAcct.isEmpty() ? this->get_default_account_id() : qstrAcct;

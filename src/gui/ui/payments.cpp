@@ -348,7 +348,8 @@ void Payments::RefreshUserBar()
 
 //    if (!qstr_acct_nym.isEmpty())
 //    {
-//        payment_code = Moneychanger::It()->OT().Exec().GetNym_Description(qstr_acct_nym.toStdString());
+//        auto pNym = Moneychanger::It()->OT().Wallet().Nym(opentxs::Identifier::Factory(qstr_acct_nym.toStdString()));
+//        payment_code = pNym->PaymentCode();
 //        qstrPaymentCode = QString::fromStdString(payment_code);
 //        // ----------------------------
 //        QString qstr_name = QString::fromStdString(Moneychanger::It()->OT().Exec().GetNym_Name(qstr_acct_nym.toStdString()));
@@ -563,7 +564,8 @@ QWidget * Payments::CreateUserBarWidget()
 
     if (!qstr_acct_nym.isEmpty())
     {
-        payment_code = Moneychanger::It()->OT().Exec().GetNym_Description(qstr_acct_nym.toStdString());
+        auto pNym = Moneychanger::It()->OT().Wallet().Nym(opentxs::Identifier::Factory(qstr_acct_nym.toStdString()));
+        payment_code = pNym->PaymentCode();
         qstrPaymentCode = QString::fromStdString(payment_code);
         // ----------------------------
         QString qstr_name = QString::fromStdString(Moneychanger::It()->OT().Exec().GetNym_Name(qstr_acct_nym.toStdString()));

@@ -59,7 +59,7 @@ public slots:
 
 private:
     QPointer<QPlainTextEdit> m_pPlainTextEdit;
-    QPointer<MTCredentials>  m_pCredentials;
+//  QPointer<MTCredentials>  m_pCredentials;
     QPointer<QTreeWidget>    treeWidgetClaims_;
 
     QPointer<QLabel>       pLabelNymId_;
@@ -74,14 +74,14 @@ private:
     QScopedPointer<QMenu> popupMenu_; // For the grid showing notaries the Nym is registered on.
     QScopedPointer<QMenu> popupMenuProfile_; // For the tree showing the Nym's profile claims/verifications.
 
-    QAction * pActionRegister_ = nullptr;
-    QAction * pActionUnregister_ = nullptr;
+    QAction * pActionRegister_{nullptr};
+    QAction * pActionUnregister_{nullptr};
 
-    QAction * pActionConfirm_ = nullptr;
-    QAction * pActionRefute_ = nullptr;
-    QAction * pActionNoComment_ = nullptr;
+    QAction * pActionConfirm_{nullptr};
+    QAction * pActionRefute_{nullptr};
+    QAction * pActionNoComment_{nullptr};
 
-    QTreeWidgetItem * metInPerson_ = nullptr;
+    QTreeWidgetItem * metInPerson_{nullptr};
 
 private slots:
     void on_lineEditName_editingFinished();
@@ -104,10 +104,11 @@ protected:
     void clearNotaryTable();
 
 private:
-    QPointer<QWidget>   m_pHeaderWidget;
-//    QPointer<QGroupBox> m_pAddresses;
+    Ui::MTNymDetails *ui{nullptr};
 
-    Ui::MTNymDetails *ui;
+    QPointer<QWidget>   m_pHeaderWidget;
+//  QPointer<QGroupBox> m_pAddresses;
+    QPointer<QPlainTextEdit> m_pPlainTextEditNotes;
 };
 
 #endif // NYMDETAILS_HPP
