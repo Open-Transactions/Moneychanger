@@ -3741,8 +3741,7 @@ void Activity::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
         // --------------------------------------------------------
 //      connect(this, SIGNAL(showContactAndRefreshHome(QString)), Moneychanger::It(), SLOT(onNeedToPopulateRecordlist()));
         connect(this, SIGNAL(showContactAndRefreshHome(QString)), Moneychanger::It(), SLOT(mc_show_opentxs_contact_slot(QString)));
-        // --------------------------------------------------------
-
+        // --------------------------------------------------------        
 
 //        QWidget* pTab0 = ui->tabWidgetTransactions->widget(0);
 //        QWidget* pTab1 = ui->tabWidgetTransactions->widget(1);
@@ -3773,6 +3772,8 @@ void Activity::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
 
         // ------------------------
 
+        ui->toolButtonMyIdentity ->setIcon(icon_nym_);
+        ui->toolButtonMyIdentity2->setIcon(icon_nym_);
 
         // ------------------------
         /** Flag Already Init **/
@@ -3801,9 +3802,9 @@ void Activity::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
     }
 
     ui->tabWidgetMain->addTab(pTab0_, tr("Accounts"));
-    ui->tabWidgetMain->addTab(pTab1_, tr("Conversations"));
+    ui->tabWidgetMain->addTab(pTab1_, tr("Chat"));
 
-    if (Moneychanger::It()->expertMode()) ui->tabWidgetMain->addTab(pTab2_, tr("Messages")); // Messages
+//  if (Moneychanger::It()->expertMode()) ui->tabWidgetMain->addTab(pTab2_, tr("Messages")); // Messages
     if (Moneychanger::It()->expertMode()) ui->tabWidgetMain->addTab(pTab3_, tr("Agreements")); // Agreements
     if (Moneychanger::It()->expertMode()) ui->tabWidgetMain->addTab(pTab4_, tr("Exchange")); // Exchange
     if (Moneychanger::It()->expertMode()) ui->tabWidgetMain->addTab(pTab5_, tr("Tools")); // Tools
@@ -3907,7 +3908,7 @@ void Activity::Populate_comboBoxCurrency()
 
 void Activity::on_comboBoxMyNym_activated(int index)
 {
-    QTimer::singleShot(0, this, SLOT(RefreshSummaryTree()));
+    QTimer::singleShot(0, this, SLOT(RefreshSummaryTree()));    
 }
 
 void Activity::on_comboBoxMyNymChat_activated(int index)
@@ -7976,7 +7977,7 @@ void Activity::on_toolButtonPay_clicked()
                                  "(Though I thought I could send a cheque anyway, even if the "
                                  "recipient has no account created–yet–to deposit it into?) "
                                  "NOTE: IF YOU SEE THIS MESSAGE, SWITCH CODE FROM USING PAYABLE LIST TO MESSAGABLE LIST INSTEAD, OR CONTACT LIST."));
-
+            return;
         }
         // NOTE: 'GetOpentxsContacts' returns ContactList, OR PayableList, OR MessagableList,
         // depending on which optional args you include. It's ContactList by default, but if
@@ -8101,7 +8102,7 @@ void Activity::on_toolButtonMsgContact_clicked()
         // the time we get to this point. But since we're here, might
         // as well make sure we have the very latest version before we
         // send it out.
-        //I
+        //
         const auto loaded = thread.SetDraft(message);
 
         OT_ASSERT(loaded)
@@ -8150,137 +8151,227 @@ bool Activity::GetAccounts(mapIDName & mapOutput, const int nCurrencyType/*=0*/,
 //
 void Activity::on_toolButtonPayContact_clicked()
 {
-    QListWidgetItem * conversation_widget = ui->listWidgetConversations->currentItem();
+    QString  qstrSelectedMyNymId;
+    QString  qstrSelectedThreadId;
+    QString  qstrActivitySummaryId;
 
-    if (nullptr == conversation_widget) {
-        QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME),
-            tr("Sorry, but there is no contact selected for you to send a payment to. "
-               "Perhaps try adding a contact first, and then try to pay him?"));
-        return;
-    }
-    QString qstrAccountId;
-    // ----------------------------------------------
-    const QVariant qvarMyNymId  = conversation_widget->data(Qt::UserRole+1);
-    const QVariant qvarThreadId = conversation_widget->data(Qt::UserRole+2);
+    const bool bRetrieved = RetrieveSelectedIdsChatTab(
+        qstrSelectedMyNymId,
+        qstrSelectedThreadId,
+        qstrActivitySummaryId
+        );
+    // ----------------------------------------
+    opentxs::OTIdentifier currentNymId = qstrSelectedMyNymId.isEmpty()
+            ? opentxs::Identifier::Factory()
+            : opentxs::Identifier::Factory(qstrSelectedMyNymId.toStdString());
 
-    const QString  qstrMyNymId  = qvarMyNymId.isValid()  ? qvarMyNymId.toString()  : QString("");
-    const QString  qstrThreadId = qvarThreadId.isValid() ? qvarThreadId.toString() : QString("");
-
-    if (qstrMyNymId.isEmpty() || qstrThreadId.isEmpty()) {
-        qDebug() << "Activity::on_toolButtonPayContact_clicked: Either Nym ID or Contact ID is empty. Returning. Failed.";
-        return;
-    }
-    const QString  qstrContactId = qstrThreadId;
-    // ----------------------------------------------
-    const std::string str_my_nym_id = qstrMyNymId.toStdString();
-    const std::string str_thread_id = qstrThreadId.toStdString();
-    // ----------------------------------------------
-    // NOTE: Sometimes the "conversational thread id" is just the contact ID,
-    // like when it's just you and the recipient in a private thread.
-    // But otherwise, it might be a group conversation, in which case the
-    // thread ID is the group ID (and thus NOT a contact ID). But it's okay
-    // to pass it either way, because Opentxs handles it properly either way.
-    //
-    const auto nymID = opentxs::Identifier::Factory(str_my_nym_id);
-    const auto threadID = opentxs::Identifier::Factory(str_thread_id);
-//  auto& thread = Moneychanger::It()->OT().UI().ActivityThread(nymID, threadID);
-
-    if (qstrAccountId.isEmpty())
+    if (qstrSelectedMyNymId.isEmpty())
     {
+        // There may not be any conversation selected, and thus we wouldn't
+        // have the NymId from the "selected conversation" (since there is none).
+        // Therefore we grab the NymId from the drop-down instead.
+        //
+        const QVariant currentDataMyNym = ui->comboBoxMyNymChat->currentData();
+
+        if (currentDataMyNym.isValid())
+        {
+            qstrSelectedMyNymId = currentDataMyNym.toString();
+            currentNymId = opentxs::Identifier::Factory(qstrSelectedMyNymId.toStdString());
+        }
+    }
+
+    if (qstrSelectedMyNymId.isEmpty())
+    {
+        qDebug() << "on_toolButtonPayContact_clicked: No Nym is selected. Probably the button should have been greyed out, too.";
+        return;
+    }
+    // ----------------------------------------
+    if (qstrSelectedThreadId.isEmpty())
+    {
+        // Pop up a Contact selection box. The user chooses an existing contact.
+        //
         DlgChooser theChooser(this);
-        theChooser.SetIsAccounts();
+        // -----------------------------------------------
         mapIDName & the_map = theChooser.m_map;
+//      const bool bGotContacts = MTContactHandler::getInstance()->GetOpentxsContacts(the_map);
+        const bool bGotContacts = MTContactHandler::getInstance()->GetOpentxsContacts(the_map, currentNymId);
+//      const bool bGotContacts = MTContactHandler::getInstance()->GetOpentxsContacts(the_map, nymID, nCurrencyType);
 
-        const bool bFoundAccounts = GetAccounts(the_map, 0, str_my_nym_id);
-
-        if (!bFoundAccounts) {
-            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Unable to find any accounts to pay from. Try pairing to a Stash Node first?"));
+        if (!bGotContacts) {
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
+                                 tr("You have no messageable contacts, sorry. Try adding a contact."));
             return;
         }
         // -----------------------------------------------
-        theChooser.setWindowTitle(tr("Select your Account to Pay from"));
+        theChooser.setWindowTitle(tr("Choose a contact"));
+        if (theChooser.exec() != QDialog::Accepted)
+            return;
         // -----------------------------------------------
-        if (theChooser.exec() == QDialog::Accepted)
-        {
-            if (!theChooser.m_qstrCurrentID.isEmpty())
-            {
-                qstrAccountId = theChooser.m_qstrCurrentID;
-            }
+        qstrSelectedThreadId = theChooser.GetCurrentID();
+    }
+    // --------------------------------------------
+    if (qstrSelectedThreadId.isEmpty())
+    {
+        qDebug() << "on_toolButtonPayContact_clicked: No Contact is selected. Probably the button should have been greyed out, too.";
+        return;
+    }
+    // --------------------------------------------
+    const std::string str_my_nym_id = qstrSelectedMyNymId.toStdString();
+    const std::string str_thread_id = qstrSelectedThreadId.toStdString();
+    // --------------------------------------------
+    const opentxs::OTIdentifier nymID    = opentxs::Identifier::Factory(str_my_nym_id);
+    const opentxs::OTIdentifier threadID = opentxs::Identifier::Factory(str_thread_id);
+    // --------------------------------------------
+    if (opentxs::Messagability::READY !=
+        Moneychanger::It()->OT().Sync().CanMessage(nymID, threadID))
+    {
+        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
+            tr("Sorry, but the selected contact is not yet messagable.") );
+        return;
+    }
+    // ----------------------------------------------
+    QString qstrAccountId;
+
+    DlgChooser theChooser(this);
+    theChooser.SetIsAccounts();
+    mapIDName & the_map = theChooser.m_map;
+
+    const bool bFoundAccounts = GetAccounts(the_map, 0, str_my_nym_id);
+
+    if (!bFoundAccounts) {
+        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
+            tr("Unable to find any accounts to pay from. Try pairing to a Stash Node first?"));
+        return;
+    }
+    // -----------------------------------------------
+    theChooser.setWindowTitle(tr("Select your Account to Pay from"));
+    // -----------------------------------------------
+    if (theChooser.exec() == QDialog::Accepted) {
+        if (!theChooser.m_qstrCurrentID.isEmpty()) {
+            qstrAccountId = theChooser.m_qstrCurrentID;
         }
     }
     // ----------------------------------------------
-    if (qstrAccountId.isEmpty() || qstrContactId.isEmpty())
+    if (qstrAccountId.isEmpty() || qstrSelectedThreadId.isEmpty()) {
+        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
+            tr("Failure: Either the Account Id or Contact Id was empty."));
         return;
+    }
     // ---------------------------------------------------
-    emit payFromAccountToContact(qstrAccountId, qstrContactId);
+    emit payFromAccountToContact(qstrAccountId, qstrSelectedThreadId);
 }
 
 
 void Activity::on_toolButtonInvoiceContact_clicked()
 {
-    QListWidgetItem * conversation_widget = ui->listWidgetConversations->currentItem();
+    QString  qstrSelectedMyNymId;
+    QString  qstrSelectedThreadId;
+    QString  qstrActivitySummaryId;
 
-    if (nullptr == conversation_widget) {
-        QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME),
-            tr("Sorry, but there is no contact selected for you to send an invoice to. "
-               "Perhaps try adding a contact first, and then try to pay him?"));
-        return;
-    }
-    QString qstrAccountId;
-    // ----------------------------------------------
-    const QVariant qvarMyNymId  = conversation_widget->data(Qt::UserRole+1);
-    const QVariant qvarThreadId = conversation_widget->data(Qt::UserRole+2);
+    const bool bRetrieved = RetrieveSelectedIdsChatTab(
+        qstrSelectedMyNymId,
+        qstrSelectedThreadId,
+        qstrActivitySummaryId
+        );
+    // ----------------------------------------
+    opentxs::OTIdentifier currentNymId = qstrSelectedMyNymId.isEmpty()
+            ? opentxs::Identifier::Factory()
+            : opentxs::Identifier::Factory(qstrSelectedMyNymId.toStdString());
 
-    const QString  qstrMyNymId  = qvarMyNymId.isValid()  ? qvarMyNymId.toString()  : QString("");
-    const QString  qstrThreadId = qvarThreadId.isValid() ? qvarThreadId.toString() : QString("");
-
-    if (qstrMyNymId.isEmpty() || qstrThreadId.isEmpty()) {
-        qDebug() << "Activity::on_toolButtonInvoiceContact_clicked: Either Nym ID or Contact ID is empty. Returning. Failed.";
-        return;
-    }
-    const QString  qstrContactId = qstrThreadId;
-    // ----------------------------------------------
-    const std::string str_my_nym_id = qstrMyNymId.toStdString();
-    const std::string str_thread_id = qstrThreadId.toStdString();
-    // ----------------------------------------------
-    // NOTE: Sometimes the "conversational thread id" is just the contact ID,
-    // like when it's just you and the recipient in a private thread.
-    // But otherwise, it might be a group conversation, in which case the
-    // thread ID is the group ID (and thus NOT a contact ID). But it's okay
-    // to pass it either way, because Opentxs handles it properly either way.
-    //
-    const auto nymID = opentxs::Identifier::Factory(str_my_nym_id);
-    const auto threadID = opentxs::Identifier::Factory(str_thread_id);
-//  auto& thread = Moneychanger::It()->OT().UI().ActivityThread(nymID, threadID);
-
-    if (qstrAccountId.isEmpty())
+    if (qstrSelectedMyNymId.isEmpty())
     {
+        // There may not be any conversation selected, and thus we wouldn't
+        // have the NymId from the "selected conversation" (since there is none).
+        // Therefore we grab the NymId from the drop-down instead.
+        //
+        const QVariant currentDataMyNym = ui->comboBoxMyNymChat->currentData();
+
+        if (currentDataMyNym.isValid())
+        {
+            qstrSelectedMyNymId = currentDataMyNym.toString();
+            currentNymId = opentxs::Identifier::Factory(qstrSelectedMyNymId.toStdString());
+        }
+    }
+
+    if (qstrSelectedMyNymId.isEmpty())
+    {
+        qDebug() << "on_toolButtonInvoiceContact_clicked: No Nym is selected. Probably the button should have been greyed out, too.";
+        return;
+    }
+    // ----------------------------------------
+    if (qstrSelectedThreadId.isEmpty())
+    {
+        // Pop up a Contact selection box. The user chooses an existing contact.
+        //
         DlgChooser theChooser(this);
-        theChooser.SetIsAccounts();
+        // -----------------------------------------------
         mapIDName & the_map = theChooser.m_map;
+//      const bool bGotContacts = MTContactHandler::getInstance()->GetOpentxsContacts(the_map);
+        const bool bGotContacts = MTContactHandler::getInstance()->GetOpentxsContacts(the_map, currentNymId);
+//      const bool bGotContacts = MTContactHandler::getInstance()->GetOpentxsContacts(the_map, nymID, nCurrencyType);
 
-        const bool bFoundAccounts = GetAccounts(the_map, 0, str_my_nym_id);
-
-        if (!bFoundAccounts) {
-            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Unable to find any accounts to receive into. Try pairing to a Stash Node first?"));
+        if (!bGotContacts) {
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
+                                 tr("You have no messageable contacts, sorry. Try adding a contact."));
             return;
         }
         // -----------------------------------------------
-        theChooser.setWindowTitle(tr("Select Receiving Account"));
+        theChooser.setWindowTitle(tr("Choose a contact"));
+        if (theChooser.exec() != QDialog::Accepted)
+            return;
         // -----------------------------------------------
-        if (theChooser.exec() == QDialog::Accepted)
-        {
-            if (!theChooser.m_qstrCurrentID.isEmpty())
-            {
-                qstrAccountId = theChooser.m_qstrCurrentID;
-            }
+        qstrSelectedThreadId = theChooser.GetCurrentID();
+    }
+    // --------------------------------------------
+    if (qstrSelectedThreadId.isEmpty())
+    {
+        qDebug() << "on_toolButtonInvoiceContact_clicked: No Contact is selected. Probably the button should have been greyed out, too.";
+        return;
+    }
+    // --------------------------------------------
+    const std::string str_my_nym_id = qstrSelectedMyNymId.toStdString();
+    const std::string str_thread_id = qstrSelectedThreadId.toStdString();
+    // --------------------------------------------
+    const opentxs::OTIdentifier nymID    = opentxs::Identifier::Factory(str_my_nym_id);
+    const opentxs::OTIdentifier threadID = opentxs::Identifier::Factory(str_thread_id);
+    // --------------------------------------------
+    if (opentxs::Messagability::READY !=
+        Moneychanger::It()->OT().Sync().CanMessage(nymID, threadID))
+    {
+        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
+            tr("Sorry, but the selected contact is not yet messagable.") );
+        return;
+    }
+    // ----------------------------------------------
+    QString qstrAccountId;
+
+    DlgChooser theChooser(this);
+    theChooser.SetIsAccounts();
+    mapIDName & the_map = theChooser.m_map;
+
+    const bool bFoundAccounts = GetAccounts(the_map, 0, str_my_nym_id);
+
+    if (!bFoundAccounts) {
+        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
+            tr("Unable to find any accounts to pay from. Try pairing to a Stash Node first?"));
+        return;
+    }
+    // -----------------------------------------------
+    theChooser.setWindowTitle(tr("Select your receiving Account"));
+    // -----------------------------------------------
+    if (theChooser.exec() == QDialog::Accepted) {
+        if (!theChooser.m_qstrCurrentID.isEmpty()) {
+            qstrAccountId = theChooser.m_qstrCurrentID;
         }
     }
     // ----------------------------------------------
-    if (qstrAccountId.isEmpty() || qstrContactId.isEmpty())
+    if (qstrAccountId.isEmpty() || qstrSelectedThreadId.isEmpty()) {
+        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
+            tr("Failure: Either the Account Id or Contact Id was empty."));
         return;
+    }
     // ---------------------------------------------------
-    emit requestToAccountFromContact(qstrAccountId, qstrContactId);
+    emit requestToAccountFromContact(qstrAccountId, qstrSelectedThreadId);
 }
 
 // Accounts tab.
@@ -8385,8 +8476,13 @@ void Activity::on_toolButtonDeposit_clicked()
         auto editor = Moneychanger::It()->OT().Wallet().mutable_Issuer(nymID, issuerNymId);
         auto& issuer = editor.It();
 
-//      if (pIssuer)
+        if (bailmentInstructions.empty())
         {
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
+                                 tr("Sorry, but though bailmentReply.has_instructions() returned true, "
+                                    " the bailment instructions field is nonetheless actually empty. Failure in opentxs."));
+        }
+        else {
             issuer.SetUsed(opentxs::proto::PEERREQUEST_BAILMENT, bailmentId);
 
             DlgInbailment * pDlgInbailment =
@@ -8400,19 +8496,11 @@ void Activity::on_toolButtonDeposit_clicked()
             pDlgInbailment->setAttribute(Qt::WA_DeleteOnClose);
             pDlgInbailment->show();
         }
-//      else {
-//          QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
-//                               tr("Sorry, but the issuer information is not current available. Failure."));
-//      }
-
-//      QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME),
-//          tr("Success requesting a deposit address. "
-//          "(Soon, it should pop up on the screen in a separate window). "
-//          "TODO: Reserve these addresses in advance, so the user doesn't have to wait."));
     }
     else {
         QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
-                             tr("Sorry, but a deposit address is currently unavailable. A new one is already being requested (normally I keep a few laying around for these situations...) Please try again soon."));
+                             tr("Sorry, but a deposit address is currently unavailable. "
+                                "A new one is already being requested (normally I keep a few laying around for these situations...) Please try again soon."));
     }
 }
 
@@ -8612,4 +8700,9 @@ void Activity::on_toolButtonSettings_2_clicked()
     qDebug() << "on_toolButtonSettings_2_clicked was successfully called.";
 
     emit showSettings();
+}
+
+void Activity::on_toolButtonPairNode_clicked()
+{
+    QTimer::singleShot(0, Moneychanger::It(), SLOT(mc_pair_node_slot()));
 }

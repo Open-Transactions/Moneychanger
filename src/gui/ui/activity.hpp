@@ -414,6 +414,8 @@ private slots:
 
     void on_toolButtonSettings_2_clicked();
 
+    void on_toolButtonPairNode_clicked();
+
 private:
     Ui::Activity *ui{nullptr};
 

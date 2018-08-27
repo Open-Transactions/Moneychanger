@@ -6,6 +6,8 @@
 
 #include <gui/widgets/editdetails.hpp>
 
+#include <opentxs/opentxs.hpp>
+
 #include <QGroupBox>
 
 namespace Ui {
@@ -55,7 +57,9 @@ public slots:
     void onClaimsUpdatedTimer();
 
 protected:
-    
+    void display_groups(QString & qstrOutput, const opentxs::ui::ContactSection& section) const;
+    void display_items(QString & qstrOutput, const opentxs::ui::ContactSubsection& group) const;
+
 private:
     QPointer<QPlainTextEdit> m_pPlainTextEdit;
     QPointer<QPlainTextEdit> m_pPlainTextEditNotes;

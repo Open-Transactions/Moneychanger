@@ -873,10 +873,10 @@ void MTDetailEdit::RefreshRecords()
         QTableWidgetItem * item = ui->tableWidget->takeItem(0,1); // Row 0, Column 1
         ui->tableWidget->removeRow(0); // Row 0.
 
-        if (NULL != item)
+        if (nullptr != item)
         {
             delete item;
-            item = NULL;
+            item = nullptr;
         }
     }
     // -------------------------------------------------------
@@ -905,17 +905,17 @@ void MTDetailEdit::RefreshRecords()
     {
         ++nIndex; // 0 on first iteration.
 
-//        qDebug() << "MTDetailEdit Iteration: " << nIndex;
+//      qDebug() << "MTDetailEdit Iteration: " << nIndex;
         // -------------------------------------
         QString qstrID    = ii.key();
         QString qstrValue = ii.value();
 
-//        qDebug() << QString("MTDetailEdit::RefreshRecords: Name: %1, ID: %2").arg(qstrValue, qstrID);
+//      qDebug() << QString("MTDetailEdit::RefreshRecords: Name: %1, ID: %2").arg(qstrValue, qstrID);
         // -------------------------------------
         if (!m_PreSelected.isEmpty() && (0 == m_PreSelected.compare(qstrID)))
             nPreselectedIndex = nIndex;
         // -------------------------------------
-        QWidget * pWidget = NULL;
+        QWidget * pWidget = nullptr;
 
         // -------------------------------------------
         switch (m_Type)
@@ -992,7 +992,7 @@ void MTDetailEdit::RefreshRecords()
                     // ------------------------------------------------------
                     opentxs::OTDB::MarketData * pMarketData = VPtr<opentxs::OTDB::MarketData>::asPtr(it_market.value());
 
-                    if (NULL != pMarketData) // Should never be NULL.
+                    if (nullptr != pMarketData) // Should never be NULL.
                     {
                         // ------------------------------------------------------
                         int64_t     lScale    = Moneychanger::It()->OT().Exec().StringToLong(pMarketData->scale);
@@ -1032,7 +1032,7 @@ void MTDetailEdit::RefreshRecords()
                     // ------------------------------------------------------
                     opentxs::OTDB::OfferDataNym * pOfferData = VPtr<opentxs::OTDB::OfferDataNym>::asPtr(it_offer.value());
 
-                    if (NULL != pOfferData) // Should never be NULL.
+                    if (nullptr != pOfferData) // Should never be NULL.
                     {
                         bool        bSelling          = pOfferData->selling;
                         // ------------------------------------------------------
@@ -1102,7 +1102,7 @@ void MTDetailEdit::RefreshRecords()
             return;
         }
         // -------------------------------------------
-        if (NULL != pWidget)
+        if (nullptr != pWidget)
             ui->tableWidget->setCellWidget( nIndex, 1, pWidget );
         else
             qDebug() << "Failed creating detail header widget in MTDetailEdit::RefreshRecords()";
