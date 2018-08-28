@@ -465,6 +465,7 @@ private:
     QSharedPointer<QStandardItemModel> pModelMessages_;
     QSharedPointer<ConvMsgsProxyModel> pThreadItemsProxyModel_;
 
+    QSharedPointer<QStandardItemModel>   pModelPayments_;
     QPointer<ActivityPaymentsProxyModel> pPmntProxyModel_;
 //  QPointer<ActivityPaymentsProxyModel> pPmntProxyModelInbox_;
 //  QPointer<ActivityPaymentsProxyModel> pPmntProxyModelOutbox_;

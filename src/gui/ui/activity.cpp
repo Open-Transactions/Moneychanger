@@ -50,6 +50,47 @@ template class opentxs::SharedPimpl<opentxs::ui::AccountSummaryItem>;
 
 template class opentxs::SharedPimpl<opentxs::ui::BalanceItem>;
 
+
+
+static void setup_tableview_conversation(QTableView * pView)
+{
+    pView->setSortingEnabled(true);
+    pView->resizeColumnsToContents();
+//  pView->resizeRowsToContents();
+    pView->horizontalHeader()->setStretchLastSection(true);
+    pView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    pView->sortByColumn(0, Qt::DescendingOrder); // The timestamp ends up at index 0 in this proxy view.
+    pView->setContextMenuPolicy(Qt::CustomContextMenu);
+    pView->verticalHeader()->hide();
+    pView->horizontalHeader()->hide();
+    pView->setAlternatingRowColors(true);
+    pView->setSelectionBehavior(QAbstractItemView::SelectRows);
+}
+
+
+static void setup_tableview(QTableView * pView, QAbstractItemModel * pProxyModel)
+{
+    ActivityPaymentsProxyModel * pPmntProxyModel = static_cast<ActivityPaymentsProxyModel *>(pProxyModel);
+    pPmntProxyModel->setTableView(pView);
+    pView->setModel(pProxyModel);
+
+    pView->setSortingEnabled(true);
+    pView->resizeColumnsToContents();
+    pView->resizeRowsToContents();
+    pView->horizontalHeader()->setStretchLastSection(true);
+    pView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    pView->sortByColumn(7, Qt::DescendingOrder); // The timestamp ends up at index 7 in all the proxy views.
+
+    pView->setContextMenuPolicy(Qt::CustomContextMenu);
+    pView->verticalHeader()->hide();
+    pView->setAlternatingRowColors(true);
+    pView->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
+    pView->setSelectionBehavior(QAbstractItemView::SelectRows);
+}
+
+
+
 /*
  * The tree items will have certain values attached to them.
  * I will have to figure out what those are.
@@ -1350,6 +1391,15 @@ void Activity::NewRefreshPayments()
     }
     // else empty the payments list and re-populate it.
 
+    pModelPayments_ = pModel;
+    pPmntProxyModel_ = new ActivityPaymentsProxyModel;
+    pPmntProxyModel_ ->setSourceModel(&(*pModel));
+    // ---------------------------------
+    setup_tableview(ui->tableViewPayments, pPmntProxyModel_);
+    // ---------------------------------
+    QItemSelectionModel *sm1 = ui->tableViewPayments->selectionModel();
+    connect(sm1, SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
+            this, SLOT(on_tableViewPaymentsSelectionModel_currentRowChanged(QModelIndex,QModelIndex)));
 
 
     //resume
@@ -1564,11 +1614,13 @@ QSharedPointer<QStandardItemModel>  Activity::getAccountActivityModel()
 
 
     if (!bRetrieved) {
+        qDebug() << __FUNCTION__ << " RetrieveSelectedIdsAccountTab returned false.";
         return pModel;
     }
     auto & [ bSelectedTrusted, bSelectedHosted, bSelectedCurrencyType, bSelectedIssuer, bSelectedAccount, bSelectedContact ] = aboutSelection;
 
     if (qstrMyNymId.isEmpty() || qstrAccountId.isEmpty()) {
+        qDebug() << __FUNCTION__ << " RetrieveSelectedIdsAccountTab returned empty Nym or Account Id.";
         return pModel;
     }
     const std::string str_my_nym_id      = qstrMyNymId.toStdString();
@@ -1579,7 +1631,8 @@ QSharedPointer<QStandardItemModel>  Activity::getAccountActivityModel()
     // --------------------------------------------
     auto& list = Moneychanger::It()->OT().UI().AccountActivity(nymID, accountID);  // <================
     // --------------------------------------------
-    opentxs::otOut << "Account " << qstrAccountId.toStdString() << ":\n";
+    opentxs::otOut << "\n\n Columns: " << opentxs::String::LongToString(column)
+                   << " Activity::getAccountActivityModel():\n Account " << qstrAccountId.toStdString() << ":\n";
 
     auto row = list.First();
 
@@ -3197,45 +3250,6 @@ void Activity::RefreshConversationsTab()
 
 
 
-static void setup_tableview_conversation(QTableView * pView)
-{
-    pView->setSortingEnabled(true);
-    pView->resizeColumnsToContents();
-//  pView->resizeRowsToContents();
-    pView->horizontalHeader()->setStretchLastSection(true);
-    pView->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    pView->sortByColumn(0, Qt::DescendingOrder); // The timestamp ends up at index 0 in this proxy view.
-    pView->setContextMenuPolicy(Qt::CustomContextMenu);
-    pView->verticalHeader()->hide();
-    pView->horizontalHeader()->hide();
-    pView->setAlternatingRowColors(true);
-    pView->setSelectionBehavior(QAbstractItemView::SelectRows);
-}
-
-
-static void setup_tableview(QTableView * pView, QAbstractItemModel * pProxyModel)
-{
-    ActivityPaymentsProxyModel * pPmntProxyModel = static_cast<ActivityPaymentsProxyModel *>(pProxyModel);
-    pPmntProxyModel->setTableView(pView);
-    pView->setModel(pProxyModel);
-
-    pView->setSortingEnabled(true);
-    pView->resizeColumnsToContents();
-    pView->resizeRowsToContents();
-    pView->horizontalHeader()->setStretchLastSection(true);
-    pView->setEditTriggers(QAbstractItemView::NoEditTriggers);
-
-    pView->sortByColumn(7, Qt::DescendingOrder); // The timestamp ends up at index 7 in all the proxy views.
-
-    pView->setContextMenuPolicy(Qt::CustomContextMenu);
-    pView->verticalHeader()->hide();
-    pView->setAlternatingRowColors(true);
-    pView->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
-    pView->setSelectionBehavior(QAbstractItemView::SelectRows);
-}
-
-
-
 //QSharedPointer<QStandardItemModel>  pStandardModelMessages_;
 
 //QSharedPointer<QSqlQueryMessages>  pModelMessages_;
@@ -3717,6 +3731,7 @@ void Activity::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
 
         if (pModel)
         {
+            pModelPayments_ = pModel;
             pPmntProxyModel_ = new ActivityPaymentsProxyModel;
             pPmntProxyModel_ ->setSourceModel(&(*pModel));
 //          pPmntProxyModelOutbox_->setFilterFolder(0);
@@ -3728,9 +3743,6 @@ void Activity::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
             QItemSelectionModel *sm1 = ui->tableViewPayments->selectionModel();
             connect(sm1, SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
                     this, SLOT(on_tableViewPaymentsSelectionModel_currentRowChanged(QModelIndex,QModelIndex)));
-//            QItemSelectionModel *sm2 = ui->tableViewReceived->selectionModel();
-//            connect(sm2, SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
-//                    this, SLOT(on_tableViewReceivedSelectionModel_currentRowChanged(QModelIndex,QModelIndex)));
         }
         // --------------------------------------------------------
         connect(ui->toolButtonMyIdentity,  SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_defaultnym_slot()));
@@ -4551,7 +4563,7 @@ void Activity::setAsCurrentPayment(int nSourceRow, int nFolder)
     if (-1 == nSourceRow || -1 == nFolder)
         return;
 
-    QSharedPointer<QStandardItemModel>  pModel = getAccountActivityModel();
+    QSharedPointer<QStandardItemModel>  pModel = pModelPayments_;
 
     if (!pModel)
         return;
