@@ -10,15 +10,33 @@
 #include <gui/widgets/wizardeditprofile.hpp>
 #include <gui/widgets/overridecursor.hpp>
 
+#include <opentxs/opentxs.hpp>
+
 #include <gui/widgets/qrtoolbutton.hpp>
 
 #include <core/handlers/DBHandler.hpp>
 #include <core/handlers/contacthandler.hpp>
 #include <core/handlers/modelclaims.hpp>
 #include <core/handlers/modelverifications.hpp>
+//#include <core/mtcomms.h>
 #include <core/moneychanger.hpp>
 
-#include <opentxs/opentxs.hpp>
+// #include <opentxs/api/client/ServerAction.hpp>
+// #include <opentxs/api/client/Sync.hpp>
+// #include <opentxs/api/Api.hpp>
+// #include <opentxs/api/Native.hpp>
+// #include <opentxs/client/OT_API.hpp>
+// #include <opentxs/client/OTAPI_Exec.hpp>
+// #include <opentxs/client/ServerAction.hpp>
+// #include <opentxs/client/Utility.hpp>
+// #include <opentxs/core/NumList.hpp>
+// #include <opentxs/core/Identifier.hpp>
+// #include <opentxs/core/Nym.hpp>
+// #include <opentxs/OT.hpp>
+// #include <opentxs/Proto.hpp>
+// #include <opentxs/Types.hpp>
+
+//#include <namecoin/Namecoin.hpp>
 
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
@@ -31,7 +49,6 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
-#include <QHeaderView>
 #include <QRadioButton>
 #include <QPlainTextEdit>
 #include <QDebug>
@@ -1603,7 +1620,7 @@ void MTNymDetails::on_btnEditProfile_clicked()
         const auto armored =
             opentxs::proto::ProtoAsArmored(contactData, "CONTACT DATA");
         const bool set =
-            Moneychanger::It()->OT().Exec().SetContactData(str_nym_id, armored.Get());
+            Moneychanger::It()->OT().Exec().SetContactData(str_nym_id, armored->Get());
         if (!set) {
             qDebug() << __FUNCTION__ << ": ERROR: Failed trying to Set Contact "
                      << "Data!";
@@ -1731,7 +1748,7 @@ void MTNymDetails::AddButtonClicked()
         auto armored =
             opentxs::proto::ProtoAsArmored(contactData, "CONTACT DATA");
 
-        if (!Moneychanger::It()->OT().Exec().SetContactData(str_id, armored.Get())) {
+        if (!Moneychanger::It()->OT().Exec().SetContactData(str_id, armored->Get())) {
             qDebug() << __FUNCTION__ << ": ERROR: Failed trying to Set Contact "
                      << "Data!";
         } else {
