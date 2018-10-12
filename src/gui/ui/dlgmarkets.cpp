@@ -410,7 +410,7 @@ bool DlgMarkets::LowLevelRetrieveOfferList(QString qstrNotaryID, QString qstrNym
         auto action = Moneychanger::It()->OT().ServerAction().DownloadNymMarketOffers(opentxs::Identifier::Factory(qstrNymID.toStdString()),
                 opentxs::Identifier::Factory(qstrNotaryID.toStdString()));
         const std::string str_reply = action->Run();
-        const int32_t     nResult   = opentxs::VerifyMessageSuccess(str_reply);
+        const int32_t     nResult   = opentxs::VerifyMessageSuccess(Moneychanger::It()->OT(), str_reply);
 
         bSuccess = (1 == nResult);
     }
@@ -718,7 +718,7 @@ bool DlgMarkets::LowLevelRetrieveMarketList(QString qstrNotaryID, QString qstrNy
         auto action = Moneychanger::It()->OT().ServerAction().DownloadMarketList(opentxs::Identifier::Factory(qstrNymID.toStdString()),
             opentxs::Identifier::Factory(qstrNotaryID.toStdString()));
         const std::string str_reply = action->Run();
-        const int32_t nResult = opentxs::VerifyMessageSuccess(str_reply);
+        const int32_t nResult = opentxs::VerifyMessageSuccess(Moneychanger::It()->OT(), str_reply);
 
         bSuccess = (1 == nResult);
     }

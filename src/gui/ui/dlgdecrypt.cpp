@@ -92,19 +92,19 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
     else //qstrText not empty.
     {
         std::string     str_input(qstrText.toStdString());
-        opentxs::String strInput (str_input.c_str());
+        auto strInput = opentxs::String::Factory(str_input.c_str());
 
-        if (strInput.Exists())
+        if (strInput->Exists())
         {
-            if (strInput.Contains("-----BEGIN OT ARMORED ENVELOPE-----"))
+            if (strInput->Contains("-----BEGIN OT ARMORED ENVELOPE-----"))
             {
                 opentxs::OTEnvelope theEnvelope;
-                opentxs::Armored armor;
+                auto armor = opentxs::Armored::Factory();
                 opentxs::Armored::LoadFromString(armor, strInput);
 
                 if (theEnvelope.SetCiphertext(armor))
                 {
-                    opentxs::String strOutput;
+                    auto strOutput = opentxs::String::Factory();
                     // -------------------------
                     // First we'll try the default nym, if one is available.
                     //
@@ -113,7 +113,7 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                     if (!qstrTempID.isEmpty()) // Default Nym IS available.
                     {
                         std::string  str_nym    (qstrTempID.toStdString());
-                        opentxs::String     strNym     (str_nym.c_str());
+                        auto     strNym  = opentxs::String::Factory(str_nym.c_str());
                         auto nym_id     = opentxs::Identifier::Factory(strNym);
 
                         if (!nym_id->empty())
@@ -123,13 +123,19 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                             std::shared_ptr<const opentxs::Nym> pNym = Moneychanger::It()->OT().Wallet().Nym(nym_id);
                             if (false != bool(pNym))
                             {
-                                if (theEnvelope.Open(*pNym, strOutput) && strOutput.Exists())
+//     EXPORT bool Open(
+//         const Nym& theRecipient,
+//         String& theOutput,
+//         const OTPasswordData* pPWData = nullptr);
+
+
+                                if (theEnvelope.Open(*(pNym.get()), strOutput) && strOutput->Exists())
                                 {
                                     bSuccessDecrypting = true;
                                     qstrNymWhoDecrypted = qstrTempID;
 
-                                    strInput  = strOutput;
-                                    str_input = strInput.Get();
+                                    strInput = strOutput;
+                                    str_input = strInput->Get();
                                     qstrText  = QString::fromStdString(str_input);
                                 }
                             }
@@ -147,9 +153,9 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
 
                             if (!OT_nym_id.isEmpty())
                             {
-                                std::string         str_nym    (OT_nym_id.toStdString());
-                                opentxs::String     strNym     (str_nym.c_str());
-                                auto nym_id     = opentxs::Identifier::Factory(strNym);
+                                std::string str_nym (OT_nym_id.toStdString());
+                                auto strNym = opentxs::String::Factory(str_nym.c_str());
+                                auto nym_id = opentxs::Identifier::Factory(strNym);
 
                                 if (!nym_id->empty())
                                 {
@@ -161,13 +167,13 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                                         // Okay there is a private key available for this Nym, so let's
                                         // try to open the envelope using it.
                                         //
-                                        if (theEnvelope.Open(*pNym, strOutput) && strOutput.Exists())
+                                        if (theEnvelope.Open(*(pNym.get()), strOutput) && strOutput->Exists())
                                         {
                                             bSuccessDecrypting = true;
                                             qstrNymWhoDecrypted = OT_nym_id;
 
                                             strInput  = strOutput;
-                                            str_input = strInput.Get();
+                                            str_input = strInput->Get();
                                             qstrText  = QString::fromStdString(str_input);
 
                                             break;
@@ -194,9 +200,9 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
             // --------------------------------------------
             // This call to DecodeIfArmored is what handles the: "-----BEGIN OT ARMORED ... -----"
 
-            if (strInput.DecodeIfArmored()) // bEscapedIsAllowed=true by default.
+            if (strInput->DecodeIfArmored()) // bEscapedIsAllowed=true by default.
             {
-                std::string str_decoded(strInput.Get());
+                std::string str_decoded(strInput->Get());
                 QString qstrDecoded(QString::fromStdString(str_decoded));
 
                 if (!qstrDecoded.isEmpty()) {
@@ -208,16 +214,16 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                 // At this point, we know it's been decrypted, if applicable, and it's been
                 // de-armored, if applicable. So now we check to see if it's a signed file.
                 //
-                if (strInput.Contains("-----BEGIN SIGNED FILE-----"))
+                if (strInput->Contains("-----BEGIN SIGNED FILE-----"))
                 {
                     auto theSignedFile{Moneychanger::It()->OT().Factory().SignedFile()};
-                    
+
                     OT_ASSERT(false != bool(theSignedFile));
 
                     if (theSignedFile->LoadContractFromString(strInput))
                     {
-                        opentxs::String strSignerNymID = theSignedFile->GetSignerNymID();
-                        std::string str_signer_nym(strSignerNymID.Get());
+                        auto strSignerNymID = opentxs::String::Factory(theSignedFile->GetSignerNymID().Get());
+                        std::string str_signer_nym(strSignerNymID->Get());
                         QString qstrSignerNym(QString::fromStdString(str_signer_nym));
 
                         if (!str_signer_nym.empty())
@@ -227,18 +233,18 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                             std::shared_ptr<const opentxs::Nym> pNym = Moneychanger::It()->OT().Wallet().Nym(id_signer_nym);
                             if (false != bool(pNym))
                             {
-                                if (theSignedFile->VerifySignature(*pNym, &thePWData))
+                                if (theSignedFile->VerifySignature(*(pNym.get()), &thePWData))
                                 {
                                     bSuccessVerifying = true;
                                     qstrNymWhoVerified = qstrSignerNym;
 
-                                    opentxs::String strContents = theSignedFile->GetFilePayload();
+                                    auto strContents = opentxs::String::Factory(theSignedFile->GetFilePayload().Get());
 
-                                    if (strContents.Exists())
+                                    if (strContents->Exists())
                                     {
                                         bSuccessDecodingSignedFile = true;
                                         strInput  = strContents;
-                                        str_input = strInput.Get();
+                                        str_input = strInput->Get();
                                         qstrText  = QString::fromStdString(str_input);
                                     }
                                 } // signature verified
@@ -251,9 +257,9 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
 
             if (Moneychanger::is_base64(qstrText))
             {
-                opentxs::Armored ascText{str_input.c_str()};
-                ascText.GetString(strInput);
-                str_input = strInput.Get();
+                auto ascText = opentxs::Armored::Factory(str_input.c_str());
+                ascText->GetString(strInput);
+                str_input = strInput->Get();
                 qstrText  = QString::fromStdString(str_input);
 
                 bSuccessDecodingBase64 = true;

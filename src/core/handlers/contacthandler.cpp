@@ -19,6 +19,7 @@
 #include <tuple>
 
 template class opentxs::Pimpl<opentxs::PaymentCode>;
+template class opentxs::Pimpl<opentxs::String>;
 
 
 //void MTNameLookupQT::notifyOfSuccessfulNotarization(const std::string & str_acct_id,
@@ -831,8 +832,8 @@ bool MTContactHandler::upsertClaim(
     QMutexLocker locker(&m_Mutex);
 
     const auto nym_id = opentxs::Identifier::Factory(nym);
-    const opentxs::String     strNym(nym_id);
-    const std::string         str_nym_id(strNym.Get());
+    const auto                strNym = opentxs::String::Factory(nym_id);
+    const std::string         str_nym_id(strNym->Get());
     const QString             qstrNymId(QString::fromStdString(str_nym_id));
 
     const QString claim_id = QString::fromStdString(claim.id());
@@ -858,9 +859,9 @@ bool MTContactHandler::upsertClaim(
         }
     }
 
-    opentxs::String strAttributes;
+    auto strAttributes = opentxs::String::Factory();
     numlistAttributes.Output(strAttributes);
-    const std::string str_attributes(strAttributes.Get());
+    const std::string str_attributes(strAttributes->Get());
     const QString qstrAttributes(QString::fromStdString(str_attributes));
     // ------------------------------------------------------------
     QString str_select_count = QString("SELECT claim_section FROM `claim` WHERE `claim_id`='%1' LIMIT 0,1").arg(claim_id);
@@ -2902,8 +2903,8 @@ QString MTContactHandler::GetOrCreateOpentxsContactBasedOnNym(QString qstrLabel,
 
     if (!contactId->empty()) // Found an existing one
     {
-        const opentxs::String strContactId(contactId);
-        const std::string str_contact_id(strContactId.Get());
+        const auto strContactId = opentxs::String::Factory(contactId);
+        const std::string str_contact_id(strContactId->Get());
         return QString::fromStdString(str_contact_id);
     }
     // -------------------------------------------------------
@@ -2913,7 +2914,7 @@ QString MTContactHandler::GetOrCreateOpentxsContactBasedOnNym(QString qstrLabel,
     const std::string str_label = qstrLabel.toStdString();
     const auto response = Moneychanger::It()->OT().Contacts().NewContact(str_label, opentxs::Identifier::Factory(nym_id_string.toStdString()),
                                                                   Moneychanger::It()->OT().Factory().PaymentCode(payment_code.toStdString()));
-    return response ? QString::fromStdString(std::string(opentxs::String(response->ID()).Get())) : QString("");
+    return response ? QString::fromStdString(std::string(opentxs::String::Factory(response->ID())->Get())) : QString("");
 }
 
 
@@ -3433,26 +3434,30 @@ bool MTContactHandler::SetContactName(const std::string& str_id, const std::stri
 //static
 QString MTContactHandler::Encrypt(QString plaintext)
 {
-    QString encrypted_value("");
+//     QString encrypted_value("");
+//
+//     if (!plaintext.isEmpty())
+//     {
+//         opentxs::OTWallet * pWallet = Moneychanger::It()->OT().OTAPI().GetWallet("MTContactHandler::Encrypt"); // This logs and ASSERTs already.
+//
+//         if (NULL != pWallet)
+//         {
+//             auto strOutput = opentxs::String::Factory(),
+//             strPlaintext(plaintext.toStdString().c_str());
+//
+//             if (pWallet->Encrypt_ByKeyID(s_key_id, strPlaintext, String::Factory(strOutput->Get())))
+//             {
+//                 std::string str_temp(strOutput->Get());
+//                 encrypted_value = QString::fromStdString(str_temp);
+//             }
+//
+//         }
+//     }
+//
+//     return encrypted_value;
 
-    if (!plaintext.isEmpty())
-    {
-        opentxs::OTWallet * pWallet = Moneychanger::It()->OT().OTAPI().GetWallet("MTContactHandler::Encrypt"); // This logs and ASSERTs already.
+    return "";
 
-        if (NULL != pWallet)
-        {
-            opentxs::String strOutput, strPlaintext(plaintext.toStdString().c_str());
-
-            if (pWallet->Encrypt_ByKeyID(s_key_id, strPlaintext, strOutput))
-            {
-                std::string str_temp(strOutput.Get());
-                encrypted_value = QString::fromStdString(str_temp);
-            }
-
-        }
-    }
-
-    return encrypted_value;
 }
 
 //static
@@ -3460,26 +3465,29 @@ QString MTContactHandler::Decrypt(QString ciphertext)
 {
 //  qDebug() << QString("Decrypting ciphertext: %1").arg(ciphertext);
 
-    QString decrypted_value("");
+//     QString decrypted_value("");
+//
+//     if (!ciphertext.isEmpty())
+//     {
+//         opentxs::OTWallet * pWallet = Moneychanger::It()->OT().OTAPI().GetWallet("MTContactHandler::Decrypt"); // This logs and ASSERTs already.
+//
+//         if (NULL != pWallet)
+//         {
+//             auto strOutput = opentxs::String::Factory(), strCiphertext(ciphertext.toStdString().c_str());
+//
+//             if (pWallet->Decrypt_ByKeyID(s_key_id, strCiphertext, strOutput))
+//             {
+//                 std::string str_temp(strOutput->Get());
+//                 decrypted_value = QString::fromStdString(str_temp);
+//             }
+//
+//         }
+//     }
+//
+//     return decrypted_value;
 
-    if (!ciphertext.isEmpty())
-    {
-        opentxs::OTWallet * pWallet = Moneychanger::It()->OT().OTAPI().GetWallet("MTContactHandler::Decrypt"); // This logs and ASSERTs already.
+    return "";
 
-        if (NULL != pWallet)
-        {
-            opentxs::String strOutput, strCiphertext(ciphertext.toStdString().c_str());
-
-            if (pWallet->Decrypt_ByKeyID(s_key_id, strCiphertext, strOutput))
-            {
-                std::string str_temp(strOutput.Get());
-                decrypted_value = QString::fromStdString(str_temp);
-            }
-
-        }
-    }
-
-    return decrypted_value;
 }
 
 // ---------------------------------------------------
@@ -3492,10 +3500,10 @@ QString MTContactHandler::Encode(QString plaintext)
     if (!plaintext.isEmpty())
     {
         // Encode base64.
-        opentxs::String        strValue(plaintext.toStdString());
-        opentxs::Armored    ascValue;
-        ascValue.SetString(strValue, false); //bLineBreaks=true by default
-        encoded_value = QString(ascValue.Get());
+        auto strValue = opentxs::String::Factory(plaintext.toStdString());
+        auto    ascValue = opentxs::Armored::Factory();
+        ascValue->SetString(strValue, false); //bLineBreaks=true by default
+        encoded_value = QString(ascValue->Get());
     }
 
     return encoded_value;
@@ -3509,11 +3517,11 @@ QString MTContactHandler::Decode(QString encoded)
     if (!encoded.isEmpty())
     {
         // Decode base64.
-        opentxs::Armored ascValue;
-        ascValue.Set(encoded.toStdString().c_str());
-        opentxs::String strValue;
-        ascValue.GetString(strValue, false); //bLineBreaks=true by default
-        decoded_value = QString(strValue.Get());
+        auto ascValue = opentxs::Armored::Factory();
+        ascValue->Set(encoded.toStdString().c_str());
+        auto strValue = opentxs::String::Factory();
+        ascValue->GetString(strValue, false); //bLineBreaks=true by default
+        decoded_value = QString(strValue->Get());
     }
 
     return decoded_value;

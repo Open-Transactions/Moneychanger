@@ -72,7 +72,7 @@ void MTAssetDetails::on_pushButton_clicked()
         QString qstrContents = QString::fromStdString(Moneychanger::It()->OT().Exec().GetAssetType_Contract(qstrAssetID.toStdString()));
         opentxs::proto::UnitDefinition contractProto =
             opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>
-                (opentxs::String(qstrContents.toStdString()));
+                (opentxs::String::Factory(qstrContents.toStdString()));
 
         if (!qstrContents.isEmpty())
         {
@@ -230,7 +230,7 @@ void MTAssetDetails::on_pushButton_clicked()
 
                                         auto action = Moneychanger::It()->OT().ServerAction().DownloadContract(nymID, notaryID, assetID);
                                         const std::string str_reply = action->Run();
-                                        const int32_t     nResult   = opentxs::VerifyMessageSuccess(str_reply);
+                                        const int32_t     nResult   = opentxs::VerifyMessageSuccess(Moneychanger::It()->OT(), str_reply);
 
                                         bSuccess = (1 == nResult);
                                     }
@@ -254,7 +254,7 @@ void MTAssetDetails::on_pushButton_clicked()
                                         auto action = Moneychanger::It()->OT().ServerAction().IssueUnitDefinition(nymID, notaryID,
                                         		contractProto);
                                         const std::string str_reply = action->Run();
-                                        const int32_t     nResult   = opentxs::VerifyMessageSuccess(str_reply);
+                                        const int32_t     nResult   = opentxs::VerifyMessageSuccess(Moneychanger::It()->OT(), str_reply);
 
                                         bSuccess = (1 == nResult);
 
@@ -726,7 +726,7 @@ void MTAssetDetails::AddButtonClicked()
                 qstrFractionalUnit = theWizard.field("currency_fractional_unit").toString();
                 qstrDecimalSpaces  = theWizard.field("currency_decimal_spaces").toString();
                 std::string str_decimal_spaces = qstrDecimalSpaces.toStdString();
-                opentxs::String strDecimalSpaces(str_decimal_spaces);
+                auto strDecimalSpaces = opentxs::String::Factory(str_decimal_spaces);
 
 //                EXPORT std::string CreateCurrencyContract(
 //                      const std::string& NYM_ID,
@@ -738,7 +738,7 @@ void MTAssetDetails::AddButtonClicked()
 //                      const uint32_t power,
 //                      const std::string& fraction) const;
 
-                const std::uint32_t uDecimalSpaces = strDecimalSpaces.ToUint();
+                const std::uint32_t uDecimalSpaces = strDecimalSpaces->ToUint();
 
                 strContractID =
                     Moneychanger::It()->OT().Exec().CreateCurrencyContract(
@@ -834,7 +834,7 @@ void MTAssetDetails::refresh(QString strID, QString strName)
                 GetAssetType_Contract(strID.toStdString()));
         opentxs::proto::UnitDefinition contractProto =
             opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>
-                (opentxs::String(qstrContents.toStdString()));
+                (opentxs::String::Factory(qstrContents.toStdString()));
 
         if (m_pPlainTextEdit)
             m_pPlainTextEdit->setPlainText(qstrContents);

@@ -1514,8 +1514,8 @@ void Messages::on_toolButtonReply_clicked()
             // recipient's Nym Id, and if so, we can check Can_Message...
             //
             const auto otherContactId = Moneychanger::It()->OT().Contacts().ContactID(opentxs::Identifier::Factory(otherNymID.toStdString()));
-            const opentxs::String     strOtherContactId(otherContactId);
-            const std::string         str_other_contact_id(strOtherContactId.Get());
+            const auto     strOtherContactId = opentxs::String::Factory(otherContactId);
+            const std::string         str_other_contact_id(strOtherContactId->Get());
             const QString             qstrOtherContactId(str_other_contact_id.empty() ? QString("") : QString::fromStdString(str_other_contact_id));
             // ---------------------------------------
             if (!str_other_contact_id.empty()) // An opentxs contact was found for the recipient Nym.

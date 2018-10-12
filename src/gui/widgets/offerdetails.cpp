@@ -208,7 +208,8 @@ void MTOfferDetails::AddButtonClicked()
         // --------------------------------------------------------
         const std::string strAttempt("create_market_offer");
 
-        int32_t nInterpretReply = opentxs::InterpretTransactionMsgReply(str_notary_id,
+        int32_t nInterpretReply = opentxs::InterpretTransactionMsgReply(Moneychanger::It()->OT(),
+                                                                        str_notary_id,
                                                                         str_nym_id,
                                                                         str_asset_acct_id,
                                                                         strAttempt, strResponse);
@@ -270,8 +271,8 @@ void MTOfferDetails::DeleteButtonClicked()
                 const std::string str_nym_id        (m_pOwner->GetMarketNymID().toStdString());
                 const std::string str_asset_acct_id (pOfferData->asset_acct_id);
                 // ---------------------------------
-                opentxs::String      strTransID(pOfferData->transaction_id);
-                const int64_t lTransID  (strTransID.ToLong());
+                auto      strTransID = opentxs::String::Factory(pOfferData->transaction_id);
+                const int64_t lTransID  (strTransID->ToLong());
                 // ---------------------------------
 
                 std::string  strResponse;
@@ -287,7 +288,8 @@ void MTOfferDetails::DeleteButtonClicked()
                 // --------------------------------------------------------
                 const std::string strAttempt("kill_market_offer");
 
-                int32_t nInterpretReply = opentxs::InterpretTransactionMsgReply(str_notary_id,
+                int32_t nInterpretReply = opentxs::InterpretTransactionMsgReply(Moneychanger::It()->OT(),
+                                                                                str_notary_id,
                                                                                 str_nym_id,
                                                                                 str_asset_acct_id,
                                                                                 strAttempt, strResponse);

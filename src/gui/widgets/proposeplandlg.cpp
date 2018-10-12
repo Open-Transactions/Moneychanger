@@ -650,7 +650,7 @@ bool ProposePlanDlg::proposePlan(QString memo, int64_t initial_amount, int64_t r
                 ->OT()
                 .Factory()
                 .Payment(
-                      opentxs::String(str_plan.c_str()))
+                      opentxs::String::Factory(str_plan.c_str()))
                 .release()};
 
         OT_ASSERT(false != bool(payment));
@@ -660,7 +660,7 @@ bool ProposePlanDlg::proposePlan(QString memo, int64_t initial_amount, int64_t r
         strResponse = action->Run();
     }
     // ------------------------------------------------------------
-    const int32_t nReturnVal = opentxs::VerifyMessageSuccess(strResponse);
+    const int32_t nReturnVal = opentxs::VerifyMessageSuccess(Moneychanger::It()->OT(), strResponse);
 
     if (1 != nReturnVal)
     {
