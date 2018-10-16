@@ -3753,7 +3753,7 @@ void Activity::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
         // --------------------------------------------------------
 //      connect(this, SIGNAL(showContactAndRefreshHome(QString)), Moneychanger::It(), SLOT(onNeedToPopulateRecordlist()));
         connect(this, SIGNAL(showContactAndRefreshHome(QString)), Moneychanger::It(), SLOT(mc_show_opentxs_contact_slot(QString)));
-        // --------------------------------------------------------        
+        // --------------------------------------------------------
 
 //        QWidget* pTab0 = ui->tabWidgetTransactions->widget(0);
 //        QWidget* pTab1 = ui->tabWidgetTransactions->widget(1);
@@ -3920,7 +3920,7 @@ void Activity::Populate_comboBoxCurrency()
 
 void Activity::on_comboBoxMyNym_activated(int index)
 {
-    QTimer::singleShot(0, this, SLOT(RefreshSummaryTree()));    
+    QTimer::singleShot(0, this, SLOT(RefreshSummaryTree()));
 }
 
 void Activity::on_comboBoxMyNymChat_activated(int index)
@@ -6177,8 +6177,8 @@ bool Activity::GetUnitAndTLAMapForAccountsOnServer(mapIDName& mapUnitTLA, // out
             opentxs::ConstUnitDefinition unit_definition = Moneychanger::It()->OT().Wallet().UnitDefinition(asset_id);
             opentxs::ConstNym issuer_nym = unit_definition->Nym();
             const opentxs::Identifier & issuer_nym_id = issuer_nym->ID();
-            const opentxs::String strIssuerNymId(issuer_nym_id);
-            const std::string str_issuer_nym_id(strIssuerNymId.Get());
+            const auto strIssuerNymId = opentxs::String::Factory();
+            const std::string str_issuer_nym_id(strIssuerNymId->Get());
             const QString qstrIssuerNymId(QString::fromStdString(str_issuer_nym_id));
 
             // This map tracks a list of assets for each TLA.
@@ -7406,7 +7406,7 @@ bool Activity::request_outbailment(
         return false;
     }
     // -----------------------------
-    const bool output = (1 == opentxs::VerifyMessageSuccess(result));
+    const bool output = (1 == opentxs::VerifyMessageSuccess(Moneychanger::It()->OT(), result));
 
     if (!output) {
         qDebug() << "Failed trying to request outbailment.";
@@ -7692,8 +7692,8 @@ void Activity::on_toolButtonAddContact_clicked()
 
     if (bPreexistingOpentxsContact) // It already exists.
     {
-        const opentxs::String strExistingContact(existingContactId);
-        qstrContactId = QString::fromStdString(std::string(strExistingContact.Get()));
+        const auto strExistingContact = opentxs::String::Factory(existingContactId);
+        qstrContactId = QString::fromStdString(std::string(strExistingContact->Get()));
     }
     else
         //if (existingContactId.IsEmpty()) so it definitely doesn't exist yet in opentxs...

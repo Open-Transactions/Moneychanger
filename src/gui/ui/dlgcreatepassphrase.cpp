@@ -140,8 +140,8 @@ void DlgCreatePassphrase::on_buttonBox_accepted()
     m_qstrURL      = ui->lineEditURL->text();
     m_qstrNotes    = ui->plainTextEditNotes->toPlainText();
 
-    auto strTemp = opentxs::String(ui->lineEditPassphrase->text().toStdString());
-    m_pPassphrase->setPassword(strTemp.Get(), strTemp.GetLength());
+    auto strTemp = opentxs::String::Factory(ui->lineEditPassphrase->text().toStdString());
+    m_pPassphrase->setPassword(strTemp->Get(), strTemp->GetLength());
 
     QDialog::accept();
 }

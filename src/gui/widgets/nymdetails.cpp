@@ -21,6 +21,7 @@
 //#include <core/mtcomms.h>
 #include <core/moneychanger.hpp>
 
+
 // #include <opentxs/api/client/ServerAction.hpp>
 // #include <opentxs/api/client/Sync.hpp>
 // #include <opentxs/api/Api.hpp>
@@ -61,6 +62,7 @@
 #include <QScopedPointer>
 #include <QLabel>
 #include <QSpacerItem>
+#include <QHeaderView>
 
 #include <map>
 #include <tuple>
@@ -139,7 +141,7 @@ void MTNymDetails::onClaimsUpdatedForNym(QString nymId)
 
     // -------------------------------------
     std::string         str_nym_id  (nymId.toStdString());
-    opentxs::String     strNymId    (str_nym_id);
+    auto                strNymId =  opentxs::String::Factory(str_nym_id);
     auto   id_nym      = opentxs::Identifier::Factory(strNymId);
     // -------------------------------------
     std::shared_ptr<const opentxs::Nym> pCurrentNym = Moneychanger::It()->OT().Wallet().Nym(id_nym) ;
@@ -170,8 +172,8 @@ void MTNymDetails::onClaimsUpdatedForNym(QString nymId)
                 {
                     MTSpinner theSpinner;
 
-                    response = opentxs::String(Moneychanger::It()->OT().Sync().RegisterNym(opentxs::Identifier::Factory(str_nym_id),
-                                                                                           opentxs::Identifier::Factory(notary_id.toStdString()), true)).Get();
+                    response = opentxs::String::Factory(Moneychanger::It()->OT().Sync().RegisterNym(opentxs::Identifier::Factory(str_nym_id),
+                                                                                           opentxs::Identifier::Factory(notary_id.toStdString()), true))->Get();
                     if (response.empty() && !Moneychanger::It()->OT().Exec().CheckConnection(notary_id.toStdString()))
                     {
                         QString qstrErrorMsg;
@@ -183,7 +185,7 @@ void MTNymDetails::onClaimsUpdatedForNym(QString nymId)
                     }
                 }
 
-                if (!opentxs::VerifyMessageSuccess(response)) {
+                if (!opentxs::VerifyMessageSuccess(Moneychanger::It()->OT(), response)) {
                     Moneychanger::It()->HasUsageCredits(notary_id, nymId);
                     continue;
                 }
@@ -1618,7 +1620,7 @@ void MTNymDetails::on_btnEditProfile_clicked()
         }
         // ------------------------------------------------
         const auto armored =
-            opentxs::proto::ProtoAsArmored(contactData, "CONTACT DATA");
+            opentxs::proto::ProtoAsArmored(contactData, opentxs::String::Factory("CONTACT DATA"));
         const bool set =
             Moneychanger::It()->OT().Exec().SetContactData(str_nym_id, armored->Get());
         if (!set) {
@@ -1746,7 +1748,7 @@ void MTNymDetails::AddButtonClicked()
         }
 
         auto armored =
-            opentxs::proto::ProtoAsArmored(contactData, "CONTACT DATA");
+            opentxs::proto::ProtoAsArmored(contactData, opentxs::String::Factory("CONTACT DATA"));
 
         if (!Moneychanger::It()->OT().Exec().SetContactData(str_id, armored->Get())) {
             qDebug() << __FUNCTION__ << ": ERROR: Failed trying to Set Contact "
@@ -2058,7 +2060,7 @@ void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
                                 auto action = Moneychanger::It()->OT().ServerAction().UnregisterNym(
                                         opentxs::Identifier::Factory(str_nym_id), opentxs::Identifier::Factory(str_notary_id));
                                 std::string strResponse = action->Run();
-                                nSuccess                = opentxs::VerifyMessageSuccess(strResponse);
+                                nSuccess                = opentxs::VerifyMessageSuccess(Moneychanger::It()->OT(), strResponse);
                             }
                             // -1 is error,
                             //  0 is reply received: failure

@@ -675,7 +675,7 @@ void MTServerDetails::refresh(QString strID, QString strName)
                 GetServer_Contract(strID.toStdString()));
         opentxs::proto::ServerContract contractProto =
             opentxs::proto::StringToProto<opentxs::proto::ServerContract>
-                (opentxs::String(qstrContents.toStdString()));
+                (opentxs::String::Factory(qstrContents.toStdString()));
 
         if (m_pPlainTextEdit)
             m_pPlainTextEdit->setPlainText(qstrContents);
@@ -715,7 +715,7 @@ void MTServerDetails::refresh(QString strID, QString strName)
 
         auto id_nym = opentxs::Identifier::Factory();
         contract->Nym()->GetIdentifier(id_nym);
-        qstrNymID = QString::fromStdString(opentxs::String(id_nym).Get());
+        qstrNymID = QString::fromStdString(opentxs::String::Factory(id_nym)->Get());
         // ----------------------------------
         ui->lineEditID   ->setText(strID);
         ui->lineEditName ->setText(strName);

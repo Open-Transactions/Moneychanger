@@ -237,10 +237,10 @@ bool MTRequestDlg::sendChequeLowLevel(
 //          const Identifier& contactID,
 //          std::unique_ptr<OTPayment>& payment) const = 0;
 
-        const opentxs::String otstrCheque(strCheque.c_str());
+        const auto otstrCheque = opentxs::String::Factory(strCheque.c_str());
 
         std::shared_ptr<const opentxs::OTPayment> pPayment{Moneychanger::It()->OT().Factory().Payment(  otstrCheque).release()};
-        
+
         OT_ASSERT(false != bool(pPayment));
 
         const auto bgthreadId
@@ -440,10 +440,10 @@ void MTRequestDlg::on_requestButton_clicked()
         {
             const auto toContact_Id = Moneychanger::It()->OT().Contacts()
                 .ContactID(opentxs::Identifier::Factory(m_hisNymId.toStdString()));
-            const opentxs::String strToContactId(toContact_Id);
+            const auto strToContactId = opentxs::String::Factory(toContact_Id);
             m_hisContactId = toContact_Id->empty()
                 ? QString("")
-                : QString::fromStdString(std::string(strToContactId.Get()));
+                : QString::fromStdString(std::string(strToContactId->Get()));
         }
     }
     // --------------------------------
@@ -670,8 +670,8 @@ void MTRequestDlg::on_toolButton_clicked()
     {
         const auto toContact_Id = Moneychanger::It()->OT().Contacts()
                 .ContactID(opentxs::Identifier::Factory(m_hisNymId.toStdString()));
-        const opentxs::String     strToContactId(toContact_Id);
-        m_hisContactId = toContact_Id->empty() ? QString("") : QString::fromStdString(std::string(strToContactId.Get()));
+        const auto     strToContactId = opentxs::String::Factory(toContact_Id);
+        m_hisContactId = toContact_Id->empty() ? QString("") : QString::fromStdString(std::string(strToContactId->Get()));
 
         if (!m_hisContactId.isEmpty())
             emit ShowContact(m_hisContactId);
@@ -698,10 +698,10 @@ void MTRequestDlg::on_fromButton_clicked()
     {
         const auto toContact_Id = Moneychanger::It()->OT().Contacts()
                 .ContactID(opentxs::Identifier::Factory(m_hisNymId.toStdString()));
-        const opentxs::String     strToContactId(toContact_Id);
+        const auto     strToContactId = opentxs::String::Factory(toContact_Id);
         m_hisContactId = toContact_Id->empty()
             ? QString("")
-            : QString::fromStdString(std::string(strToContactId.Get()));
+            : QString::fromStdString(std::string(strToContactId->Get()));
         if (!m_hisContactId.isEmpty())
             theChooser.SetPreSelected(m_hisContactId);
     }

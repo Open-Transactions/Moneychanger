@@ -205,11 +205,11 @@ void Settings::on_pushButton_clicked()
         QString qstrMyColumn1, qstrMyColumn2;
         // --------------------------------------
         const auto strCronItem =
-            opentxs::String(Moneychanger::It()->OT().Exec().GetActiveCronItem(
+            opentxs::String::Factory(Moneychanger::It()->OT().Exec().GetActiveCronItem(
                 NotaryID.toStdString(),
                 cronId));
 
-        if (!strCronItem.Exists())
+        if (!strCronItem->Exists())
             continue;
         // --------------------------------------
         std::unique_ptr<opentxs::OTCronItem> pCronItem{Moneychanger::It()->OT().Factory().CronItem(  strCronItem)};
@@ -223,7 +223,7 @@ void Settings::on_pushButton_clicked()
         if ( (nullptr != pPlan) || (nullptr != pSmart) )
         {
             std::shared_ptr<opentxs::OTPayment> thePayment{Moneychanger::It()->OT().Factory().Payment(  strCronItem)};
-            
+
             OT_ASSERT(false != bool(thePayment));
 
             if (!thePayment->IsValid())
@@ -236,10 +236,10 @@ void Settings::on_pushButton_clicked()
 
             qstrDisplayNum = QString::number(lTransNumDisplay);
 
-            opentxs::String strMemo;
+            auto strMemo = opentxs::String::Factory();
             if (thePayment->GetMemo(strMemo))
             {
-                const std::string str_memo(strMemo.Get());
+                const std::string str_memo(strMemo->Get());
                 qstrMyColumn1 = QString::fromStdString(str_memo);
             }
 
@@ -268,8 +268,8 @@ void Settings::on_pushButton_clicked()
                 const int32_t   planFailedPaymentCount       = pPlan->GetNoFailedPayments() ;
                 // --------------------------------------------------------------------------------
                 const auto idAssetType = opentxs::Identifier::Factory(pPlan->GetInstrumentDefinitionID());
-                const opentxs::String strAssetType(idAssetType);
-                const std::string str_asset_type(strAssetType.Get());
+                const auto strAssetType = opentxs::String::Factory(idAssetType);
+                const std::string str_asset_type(strAssetType->Get());
 
                 if (hasInitialPayment)
                 {
@@ -467,7 +467,7 @@ The ways in which a user should connect to an issuer:
 If you have a manual pairing dialog it should be hidden in expert mode in a debug window with plenty of warnings
 */
     // -----------------------------------
-    const std::string str_introduction_notary_id{opentxs::String(Moneychanger::It()->OT().Sync().IntroductionServer()).Get()};
+    const std::string str_introduction_notary_id{opentxs::String::Factory(Moneychanger::It()->OT().Sync().IntroductionServer())->Get()};
 
     if (str_introduction_notary_id.empty()) {
         errorMessage = tr("Introduction Notary Id not available.");

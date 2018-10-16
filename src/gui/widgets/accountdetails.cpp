@@ -1666,7 +1666,7 @@ void MTAccountDetails::DeleteButtonClicked()
 
                 auto action = Moneychanger::It()->OT().ServerAction().UnregisterAccount(theNymID, theNotaryID, theAcctID);
                 std::string strResponse = action->Run();
-                nSuccess                = opentxs::VerifyMessageSuccess(strResponse);
+                nSuccess                = opentxs::VerifyMessageSuccess(Moneychanger::It()->OT(), strResponse);
             }
             // -1 is error,
             //  0 is reply received: failure
@@ -1817,7 +1817,7 @@ void MTAccountDetails::AddButtonClicked()
         }
         // -1 error, 0 failure, 1 success.
         //
-        if (1 != opentxs::VerifyMessageSuccess(strResponse))
+        if (1 != opentxs::VerifyMessageSuccess(Moneychanger::It()->OT(), strResponse))
         {
             const int64_t lUsageCredits = Moneychanger::It()->HasUsageCredits(qstrNotaryID, qstrNymID);
 

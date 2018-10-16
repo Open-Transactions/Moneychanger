@@ -326,8 +326,8 @@ void MTContactDetails::AddButtonClicked()
 
     if (bPreexistingOpentxsContact) // It already exists.
     {
-        const opentxs::String strExistingContact(existingContactId);
-        qstrContactId = QString::fromStdString(std::string(strExistingContact.Get()));
+        const auto strExistingContact = opentxs::String::Factory(existingContactId);
+        qstrContactId = QString::fromStdString(std::string(strExistingContact->Get()));
     }
     else
     //if (existingContactId.IsEmpty()) so it definitely doesn't exist yet in opentxs...
@@ -681,7 +681,7 @@ void MTContactDetails::on_treeWidget_customContextMenuRequested(const QPoint &po
                         if (0 == sectionType)
                             return;
                         // ----------------------------------------------
-                        auto strClaimantNymId = opentxs::String(qstrClaimantNymId.toStdString());
+                        auto strClaimantNymId = opentxs::String::Factory(qstrClaimantNymId.toStdString());
                         auto claimant_nym_id = opentxs::Identifier::Factory(strClaimantNymId);
                         // ----------------------------------------------
                         // Get the Nym. Make sure we have the latest copy, since his credentials were apparently
@@ -1094,7 +1094,7 @@ void MTContactDetails::on_pushButtonRefresh_clicked()
                 response = action->Run();
             }
 
-            int32_t nReturnVal = opentxs::VerifyMessageSuccess(response);
+            int32_t nReturnVal = opentxs::VerifyMessageSuccess(Moneychanger::It()->OT(), response);
 
             if (1 == nReturnVal)
             {
@@ -1196,7 +1196,7 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
                         response = action->Run();
                     }
 
-                    int32_t nReturnVal = opentxs::VerifyMessageSuccess(response);
+                    int32_t nReturnVal = opentxs::VerifyMessageSuccess(Moneychanger::It()->OT(), response);
 
                     if (1 == nReturnVal)
                     {

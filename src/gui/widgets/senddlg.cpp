@@ -511,7 +511,7 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString toCon
         strResponse = action->Run();
     }
 
-    int32_t nInterpretReply = opentxs::InterpretTransactionMsgReply(str_NotaryID, str_fromNymId, str_fromAcctId,
+    int32_t nInterpretReply = opentxs::InterpretTransactionMsgReply(Moneychanger::It()->OT(), str_NotaryID, str_fromNymId, str_fromAcctId,
                                                                     strAttempt, strResponse);
 
     if (1 != nInterpretReply) // Failure
@@ -565,7 +565,7 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString toCon
                 .Factory()
                 .Payment(
 
-                    opentxs::String(strVoucher.c_str()))
+                    opentxs::String::Factory(strVoucher.c_str()))
                 .release()};
 
         OT_ASSERT(false != bool(payment));
@@ -624,7 +624,7 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString toCon
     // New way:
     if (canMessage_)
     {
-        const opentxs::String otstrCheque(strVoucher.c_str());
+        const auto otstrCheque = opentxs::String::Factory(strVoucher.c_str());
 
         std::shared_ptr<const opentxs::OTPayment> pPayment{Moneychanger::It()->OT().Factory().Payment(  otstrCheque).release()};
 
@@ -940,7 +940,7 @@ bool MTSendDlg::sendChequeLowLevel (int64_t amount,
 //         std::unique_ptr<Purse>& recipientCopy,
 //         std::unique_ptr<Purse>& senderCopy) const = 0;
 
-        const opentxs::String otstrCheque(strCheque.c_str());
+        const auto otstrCheque = opentxs::String::Factory(strCheque.c_str());
 
         std::shared_ptr<const opentxs::OTPayment> pPayment{Moneychanger::It()->OT().Factory().Payment(  otstrCheque).release()};
 
@@ -1232,10 +1232,10 @@ void MTSendDlg::on_sendButton_clicked()
         {
             const auto toContact_Id = Moneychanger::It()->OT().Contacts()
                 .ContactID(opentxs::Identifier::Factory(m_hisNymId.toStdString()));
-            const opentxs::String strToContactId(toContact_Id);
+            const auto strToContactId = opentxs::String::Factory(toContact_Id);
             m_hisContactId = toContact_Id->empty()
             ? QString("")
-            : QString::fromStdString(std::string(strToContactId.Get()));
+            : QString::fromStdString(std::string(strToContactId->Get()));
         }
     }
     // -----------------------------------------------------------------
@@ -1446,8 +1446,8 @@ void MTSendDlg::on_toolButton_clicked()
     {
         const auto toContact_Id = Moneychanger::It()->OT().Contacts()
             .ContactID(opentxs::Identifier::Factory(m_hisNymId.toStdString()));
-        const opentxs::String     strToContactId(toContact_Id);
-        m_hisContactId = toContact_Id->empty() ? QString("") : QString::fromStdString(std::string(strToContactId.Get()));
+        const auto     strToContactId = opentxs::String::Factory(toContact_Id);
+        m_hisContactId = toContact_Id->empty() ? QString("") : QString::fromStdString(std::string(strToContactId->Get()));
 
         if (!m_hisContactId.isEmpty())
             emit ShowContact(m_hisContactId);
@@ -1478,10 +1478,10 @@ void MTSendDlg::on_toButton_clicked()
     {
         const auto toContact_Id = Moneychanger::It()->OT().Contacts()
                 .ContactID(opentxs::Identifier::Factory(m_hisNymId.toStdString()));
-        const opentxs::String     strToContactId(toContact_Id);
+        const auto     strToContactId = opentxs::String::Factory(toContact_Id);
         m_hisContactId = toContact_Id->empty()
             ? QString("")
-            : QString::fromStdString(std::string(strToContactId.Get()));
+            : QString::fromStdString(std::string(strToContactId->Get()));
         if (!m_hisContactId.isEmpty())
             theChooser.SetPreSelected(m_hisContactId);
     }

@@ -247,11 +247,11 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                 // Sign the contents.
                 //
                 std::string  str_nym    (m_nymId.toStdString());
-                opentxs::String     strNym     (str_nym.c_str());
-                auto nym_id     = opentxs::Identifier::Factory(std::string(strNym.Get()));
+                auto     strNym = opentxs::String::Factory(str_nym.c_str());
+                auto nym_id     = opentxs::Identifier::Factory(std::string(strNym->Get()));
 
                 std::string  str_text   (qstrText.toStdString());
-                opentxs::String     strText    (str_text.c_str());
+                auto     strText = opentxs::String::Factory(str_text.c_str());
 //              opentxs::Armored ascText    (strText);
 //              std::string  str_encoded(ascText.Get());
 //              opentxs::String     strEncoded (str_encoded.c_str());
@@ -273,7 +273,7 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                         // FOR VERIFY STEP:
     //                  inline opentxs::String & opentxs::OTSignedFile::GetFilePayload()                       { return m_strSignedFilePayload;   }
 
-                        opentxs::String     strSignedOutput;
+                        auto     strSignedOutput = opentxs::String::Factory();
 
                         auto theSignedFile{Moneychanger::It()->OT().Factory().SignedFile()};
 
@@ -288,7 +288,7 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
 
                         // Set the result onto qstrText
                         //
-                        if (!strSignedOutput.Exists())
+                        if (!strSignedOutput->Exists())
                         {
                             QMessageBox::warning(this, tr("Signing Failed"),
                                                  tr("Failed trying to sign, using the selected identity."));
@@ -310,7 +310,7 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                         }
                         else
                         {
-                            std::string str_signed_output(strSignedOutput.Get());
+                            std::string str_signed_output(strSignedOutput->Get());
                             qstrText = QString::fromStdString(str_signed_output);
                         }
                     } // else (we have pNym.)
@@ -342,8 +342,8 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                     QVariant            qvarItem = pItem->data(Qt::UserRole);
                     QString             qstrNymID(qvarItem.toString());
                     std::string         str_nym(qstrNymID.toStdString());
-                    opentxs::String     strNym(str_nym.c_str());
-                    auto nym_id = opentxs::Identifier::Factory(std::string(strNym.Get()));
+                    auto     strNym = opentxs::String::Factory(str_nym.c_str());
+                    auto nym_id = opentxs::Identifier::Factory(std::string(strNym->Get()));
 
                     if (!nym_id->empty())
                     {
@@ -373,17 +373,17 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                     !m_nymId.isEmpty())
                 {
                     std::string str_signer_nym(m_nymId.toStdString());
-                    opentxs::String strSignerNymID(str_signer_nym.c_str());
+                    auto strSignerNymID = opentxs::String::Factory(str_signer_nym.c_str());
                     bool bSignerIsAlreadyThere = false;
 
                     //FOR_EACH(opentxs::setOfNyms(), setRecipients) // See if it's already there, in which case we don't need to do anything else.
                     for(auto it = setRecipients.begin(); it != setRecipients.end(); ++ it)
                     {
                         const opentxs::Nym       * pNym = *it;
-                        opentxs::String            strNymID;
+                        auto            strNymID = opentxs::String::Factory();
                         pNym->GetIdentifier(strNymID);
 
-                        if (strSignerNymID.Compare(strNymID))
+                        if (strSignerNymID->Compare(strNymID))
                             bSignerIsAlreadyThere = true;
                     }
                     // -------------------------
@@ -391,7 +391,7 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                     {
                         bRecipientsShouldBeAvailable = true;
 
-                        auto signer_nym_id = opentxs::Identifier::Factory(std::string(strSignerNymID.Get()));
+                        auto signer_nym_id = opentxs::Identifier::Factory(std::string(strSignerNymID->Get()));
 
                         if (!signer_nym_id->empty())
                         {
@@ -416,7 +416,7 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                 if (setRecipients.size() > 0)
                 {
                     opentxs::OTEnvelope theEnvelope;
-                    opentxs::String   strInput(qstrText.toStdString().c_str());
+                    auto   strInput = opentxs::String::Factory(qstrText.toStdString().c_str());
 
                     if (!theEnvelope.Seal(setRecipients, strInput))
                     {
@@ -428,12 +428,12 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                     {
                         // Success encrypting!
                         //
-                        opentxs::String     strOutput;
-                        opentxs::Armored ascCiphertext(theEnvelope);
+                        auto     strOutput = opentxs::String::Factory();
+                        auto ascCiphertext = opentxs::Armored::Factory(theEnvelope);
 
-                        if (ascCiphertext.WriteArmoredString(strOutput, "ENVELOPE")) // -----BEGIN OT ARMORED ENVELOPE-----
+                        if (ascCiphertext->WriteArmoredString(strOutput, "ENVELOPE")) // -----BEGIN OT ARMORED ENVELOPE-----
                         {
-                            std::string str_output(strOutput.Get());
+                            std::string str_output(strOutput->Get());
                             qstrText = QString::fromStdString(str_output);
                         }
                     }
@@ -454,13 +454,13 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
         else if (m_bSign && !qstrText.isEmpty())
         {
             std::string  str_text(qstrText.toStdString());
-            opentxs::String     strText (str_text.c_str());
-            opentxs::String     strOutput;
-            opentxs::Armored ascText (strText);
+            auto     strText = opentxs::String::Factory(str_text.c_str());
+            auto     strOutput = opentxs::String::Factory();
+            auto ascText = opentxs::Armored::Factory(strText);
 
-            if (ascText.WriteArmoredString(strOutput, "SIGNED FILE")) // -----BEGIN OT ARMORED SIGNED FILE-----
+            if (ascText->WriteArmoredString(strOutput, "SIGNED FILE")) // -----BEGIN OT ARMORED SIGNED FILE-----
             {
-                std::string str_output(strOutput.Get());
+                std::string str_output(strOutput->Get());
                 qstrText = QString::fromStdString(str_output);
             }
         }

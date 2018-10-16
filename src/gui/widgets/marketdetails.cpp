@@ -191,7 +191,7 @@ bool MTMarketDetails::LowLevelRetrieveMarketOffers(opentxs::OTDB::MarketData & m
         auto action = Moneychanger::It()->OT().ServerAction().DownloadMarketOffers(
                 opentxs::Identifier::Factory(strNymID), opentxs::Identifier::Factory(marketData.notary_id), opentxs::Identifier::Factory(marketData.market_id), MAX_DEPTH);
         const std::string str_reply = action->Run();
-        const int32_t     nResult   = opentxs::VerifyMessageSuccess(str_reply);
+        const int32_t     nResult   = opentxs::VerifyMessageSuccess(Moneychanger::It()->OT(), str_reply);
 
         bSuccess = (1 == nResult);
     }
