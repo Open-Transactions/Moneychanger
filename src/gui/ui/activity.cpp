@@ -45,6 +45,8 @@
 #include <tuple>
 #include <ctime>
 
+#define OT_METHOD "opentxs::activity::"
+
 template class opentxs::SharedPimpl<opentxs::ui::IssuerItem>;
 template class opentxs::SharedPimpl<opentxs::ui::AccountSummaryItem>;
 
@@ -935,13 +937,18 @@ void print_accounts(const opentxs::ui::IssuerItem& issuer)
 
     auto account = issuer.First();
 
-    if (false == account->Valid()) { opentxs::otOut << "RETURNING SINCE NO VALID ACCOUNT 1"; return; }
+    if (false == account->Valid()) {
+      opentxs::LogNormal(OT_METHOD)(__FUNCTION__)(
+	          ": RETURNING SINCE NO VALID ACCOUNT 1")
+	          .Flush();
+      return; }
 
     print_line(account.get());
 
     auto lastAccount = account->Last();
     while (false == lastAccount) {
-        opentxs::otOut << "Iterating another account..." << std::endl;
+        opentxs::LogNormal(OT_METHOD)(__FUNCTION__)(
+	     ": Iterating another account...").Flush();
         account = issuer.Next();
         if (false == account->Valid()) { return; }
         lastAccount = account->Last();
@@ -951,22 +958,29 @@ void print_accounts(const opentxs::ui::IssuerItem& issuer)
 
 void print_line(const opentxs::ui::IssuerItem& line)
 {
-    opentxs::otOut << "* " << line.Name() << " [";
+    opentxs::LogNormal(OT_METHOD)(__FUNCTION__)(
+	     ":* ")(line.Name())(" [").Flush();
 
     if (line.ConnectionState()) {
-        opentxs::otOut << "*";
+        opentxs::LogNormal(OT_METHOD)(__FUNCTION__)(
+	     ":* ").Flush();
     } else {
-        opentxs::otOut << " ";
+        opentxs::LogNormal(OT_METHOD)(__FUNCTION__)(
+	     " ").Flush();
     }
 
-    opentxs::otOut << "]\n";
+    opentxs::LogNormal(OT_METHOD)(__FUNCTION__)(
+	     ": ]").Flush();
     print_accounts(line);
 }
 
 void print_line(
     const opentxs::ui::AccountSummaryItem& line)
 {
-    opentxs::otOut << " Account display label: '" << line.Name() << "' " << "Balance: " << line.DisplayBalance() << std::endl;
+    opentxs::LogNormal(OT_METHOD)(__FUNCTION__)(
+	     ": Account display label: '")
+	     (line.Name())("' Balance: ")
+	     (line.DisplayBalance()).Flush();
 
     // This is the spot, ultimately, where the item would actually be added to the tree widget.
     // TODO.
@@ -1631,16 +1645,22 @@ QSharedPointer<QStandardItemModel>  Activity::getAccountActivityModel()
     // --------------------------------------------
     auto& list = Moneychanger::It()->OT().UI().AccountActivity(nymID, accountID);  // <================
     // --------------------------------------------
-    opentxs::otOut << "\n\n Columns: " << opentxs::String::LongToString(column)
-                   << " Activity::getAccountActivityModel():\n Account " << qstrAccountId.toStdString() << ":\n";
+    opentxs::LogNormal(OT_METHOD)(__FUNCTION__)(
+	     " Columns: ")(opentxs::String::LongToString(column))
+	    (" Activity::getAccountActivityModel():").Flush();
+    opentxs::LogNormal(OT_METHOD)(__FUNCTION__)(
+            ": Account ")(qstrAccountId.toStdString())(":").Flush();
 
     auto row = list.First();
 
     if (row->Valid()) {
         auto last = row->Last();
         const auto time = std::chrono::system_clock::to_time_t(row->Timestamp());
-        opentxs::otOut << " " << row->Text() << " " << row->DisplayAmount() << " "
-              << std::ctime(&time) << "\n " << row->Memo() << "\n";
+        opentxs::LogNormal(OT_METHOD)(__FUNCTION__)(
+	     "  ")(row->Text())(" ")(row->DisplayAmount())(" ")
+	     (std::ctime(&time)).Flush();
+	opentxs::LogNormal(OT_METHOD)(__FUNCTION__)(
+            row->Memo()).Flush();
 
 //        pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("row_widget_id"));
 //        pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("currency_type"));
@@ -1689,8 +1709,11 @@ QSharedPointer<QStandardItemModel>  Activity::getAccountActivityModel()
             row = list.Next();
             last = row->Last();
             const auto time = std::chrono::system_clock::to_time_t(row->Timestamp());
-            opentxs::otOut << " " << row->Text() << " " << row->DisplayAmount() << " "
-                  << std::ctime(&time) << "\n " << row->Memo() << "\n";
+            opentxs::LogNormal(OT_METHOD)(__FUNCTION__)(
+	     "  ")(row->Text())(" ")(row->DisplayAmount())(" ")
+	     (std::ctime(&time)).Flush();
+	    opentxs::LogNormal(OT_METHOD)(__FUNCTION__)(
+            row->Memo()).Flush();
 
 
             QList<QStandardItem*> qlistItems;
