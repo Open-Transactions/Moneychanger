@@ -3449,7 +3449,8 @@ void Activity::onOpentxsWidgetUpdated(QString qstrWidgetID)
         {
             //auto & [nym_id, currency_type] = key;
             if (0 == issuer_widget_id.compare(widget_id)) {
-                opentxs::otErr << "Activity::onOpentxsWidgetUpdated: FOUND MATCHING ISSUER WIDGET ID !!" << std::endl;
+                opentxs::LogOutput(OT_METHOD)(__FUNCTION__)(
+                            ": Activity::onOpentxsWidgetUpdated: FOUND MATCHING ISSUER WIDGET ID!!").Flush();
 
                 bNeedToRefreshSummaryTree = true;
                 break;
@@ -3459,7 +3460,8 @@ void Activity::onOpentxsWidgetUpdated(QString qstrWidgetID)
         if (!bNeedToRefreshSummaryTree) { // Haven't found anything yet? Let's try the account Widget IDs then...
             for (auto & [account_id, account_widget_id] : accountWidgets_) {
                 if (0 == account_widget_id.compare(widget_id)) {
-                    opentxs::otErr << "Activity::onOpentxsWidgetUpdated: FOUND MATCHING ACCOUNT WIDGET ID !!" << std::endl;
+                    opentxs::LogOutput(OT_METHOD)(__FUNCTION__)(
+                                ": FOUND MATCHING ACCOUNT WIDGET ID!!").Flush();
 
                     bNeedToRefreshSummaryTree = true;
                     break;
@@ -3472,7 +3474,8 @@ void Activity::onOpentxsWidgetUpdated(QString qstrWidgetID)
         }
         else
         {
-            opentxs::otErr << "Activity::onOpentxsWidgetUpdated: Oh well, Widget ID being refreshed did NOT match my list of IDs (this time!)" << std::endl;
+            opentxs::LogOutput(OT_METHOD)(__FUNCTION__)(
+                        ": Oh well, Widget ID being refreshed did NOT match my list of IDs (this time!).").Flush();
         }
     }
 }
@@ -7404,8 +7407,8 @@ bool Activity::request_outbailment(
         return false;
     }
 
-    opentxs::otErr << __FUNCTION__
-                   << ": Requesting outbailment." << std::endl;
+    opentxs::LogOutput(OT_METHOD)(__FUNCTION__)(
+                   ": Requesting outbailment.").Flush();
     std::string result{};
 
     try {
@@ -7418,7 +7421,7 @@ bool Activity::request_outbailment(
             str_blockchain_address);
         result = action->Run();
     } catch (const std::runtime_error& e) {
-        opentxs::otErr << __FUNCTION__ << ": " << e.what();
+        opentxs::LogOutput(OT_METHOD)(__FUNCTION__)(": ")(e.what())(".").Flush();
         return false;
     }
 
@@ -7437,9 +7440,9 @@ bool Activity::request_outbailment(
                              tr("Withdrawal request failed."));
     }
     else {
-        opentxs::otErr << __FUNCTION__
-                       << ": Initiate outbailment request sent.\n"
-                       << "Address: " << str_blockchain_address << std::endl;
+        opentxs::LogOutput(OT_METHOD)(__FUNCTION__)(
+                       ": Initiate outbailment request sent. "
+                       "Address: ")(str_blockchain_address)(".").Flush();
         const QString qstrMessage = QString("%1: %2. %3.")
                 .arg(tr("Success requesting a withdrawal to blockchain address"))
                 .arg(QString::fromStdString(str_blockchain_address))
